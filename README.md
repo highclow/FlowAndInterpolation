@@ -11,3 +11,8 @@ Run the following steps to download, install and demo the library:
   ```
 
 This wrapper code was developed as part of our [CVPR 2017 paper on Unsupervised Learning using unlabeled videos](http://cs.berkeley.edu/~pathak/unsupervised_video/). Github repository for our CVPR 17 paper is [here](https://github.com/pathak22/unsupervised-video).
+
+Run the following command to interpolate between two images:
+  ```Shell
+  python interpolation.py
+  ```
