@@ -12,8 +12,8 @@ using namespace std;
 void SplatMotionsWrapper(double *vx, double *vy,
                          const double *vxForward, const double *vyForward,
                          const double *vxBackward, const double *vyBackward,
-                         const double * Im1, const double * Im2,
-                         int colType, int h, int w, int c, int t) {
+                         const double *Im1, const double *Im2,
+                         int colType, int h, int w, int c, float t) {
   DImage ImFormatted1, ImFormatted2;
   DImage vxForwardFormatted, vyForwardFormatted;
   DImage vxBackwardFormatted, vyBackwardFormatted;
@@ -27,10 +27,10 @@ void SplatMotionsWrapper(double *vx, double *vy,
   ImFormatted1.allocate(w, h, c);
   ImFormatted2.allocate(w, h, c);
 
-  memcpy(vxForwardFormatted.pData, vForward, h * w * sizeof(double));
-  memcpy(vyForwardFormatted.pData, vForward, h * w * sizeof(double));
-  memcpy(vxBackwardFormatted.pData, vBackward, h * w * sizeof(double));
-  memcpy(vyBackwardFormatted.pData, vBackward, h * w * sizeof(double));
+  memcpy(vxForwardFormatted.pData, vxForward, h * w * sizeof(double));
+  memcpy(vyForwardFormatted.pData, vyForward, h * w * sizeof(double));
+  memcpy(vxBackwardFormatted.pData, vxBackward, h * w * sizeof(double));
+  memcpy(vyBackwardFormatted.pData, vyBackward, h * w * sizeof(double));
   memcpy(ImFormatted1.pData, Im1, h * w * c * sizeof(double));
   memcpy(ImFormatted2.pData, Im2, h * w * c * sizeof(double));
 
