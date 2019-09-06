@@ -250,13 +250,7 @@ def kill_nans(f):
             
 def fill_holes(splatty):
     """ Fill NaN holes in splatty by averaging neightbors. """
-    h = splatty.shape[0]
-    w = splatty.shape[1]
-    indices = []
-    for r in range(h):
-        for c in range(w):
-            indices.append((r, c))
-    indices = filter_not_nans(splatty, indices)
+    indices = filter_not_nans(splatty)
     indices.sort(key=lambda x: num_nan_neighbors(splatty, x[0], x[1]))
     for i in tqdm(indices, position=True, desc="filling holes"): 
         average_fill(splatty, i)
@@ -299,16 +293,17 @@ def num_nan_neighbors(f, r, c):
     return nans
  
 
-def filter_not_nans(f, indices):
+def filter_not_nans(f):
     """ Return a new list of indices, containing
     only pixels that are not nan in f. """
     h = f.shape[0]
     w = f.shape[1]
     no_nans = []
-    for i in indices:
-        pixel = f[i[0]][i[1]]
-        if np.isnan(pixel[0]) or np.isnan(pixel[1]):
-            no_nans.append(i)
+    for r in range(h):
+        for c in range(w):
+          pixel = f[r][c]
+          if np.isnan(pixel[0]) or np.isnan(pixel[1]):
+            no_nans.append((r,c))
     return no_nans
 
 def splat_motions(f, t=0.5):
