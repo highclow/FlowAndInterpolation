@@ -1,9 +1,15 @@
 #include "SplatMotions.h"
-#
+#include "Matrix.h"
 
 void SplatMotions::splatMotionsBidirect(DImage& vx, DImage& vy, const DImage& vxForward, const DImage& vyForward, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, float t){
 
-
+      UCImage flag;
+      const int nRows = vxForward.height();
+      const int nCols = vxForward.width();
+      flag.allocate(nRows, nCols, 1);
+      for (int i=0; i != nRows*nCols; ++i){
+        cout << i << int(flag[i]) << endl;
+      }
 //    h = frame0.shape[0]
 //    w = frame0.shape[1]
 //    splatty = np.zeros_like(forward)
