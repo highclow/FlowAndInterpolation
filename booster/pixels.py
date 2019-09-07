@@ -182,7 +182,68 @@ def splat_forward(forward, frame0, frame1, splatty,
                 if (new_ptc < old_ptc):
                     splatty[s[1]][s[0]] = motion
 
-def splat_backward(backward, frame0, frame1, splatty, 
+def splat_forward_v2(forward, frame0, frame1, splatty, pts,
+                     row, col, t=0.5):
+    """ Splat the foward frame0 motion at [row][col] onto splatty. """
+    h = frame0.shape[0]
+    w = frame0.shape[1]
+    motion = forward[row][col]
+    # Scale to cartesian space
+    ux = motion[0]/w
+    uy = -motion[1]/h
+    (x, y) = image_to_cartesian(frame0, col, row)
+    # xp and yp are the coordinates in the interpolated image
+    xp = x + t*ux
+    yp = y + t*uy
+    splats = splat(splatty, xp, yp)
+    for s in splats:
+        if check_indices(splatty, s[0], s[1]):
+              old = splatty[s[1]][s[0]]
+              if np.isnan(old[0]) or np.isnan(old[1]):
+                splatty[s[1]][s[0]] = motion
+                pts[s[1]][s[0]] = follow_intensity(frame0, frame1,
+                                                   motion, s[1], s[0], t)
+              else:
+                new_ptc = follow_intensity(frame0, frame1,
+                                           motion, s[1], s[0], t)
+                if (new_ptc < pts[s[1]][s[0]]):
+                    splatty[s[1]][s[0]] = motion
+                    pts[s[1]][s[0]] = new_ptc
+
+
+def splat_backward_v2(backward, frame0, frame1, splatty, pts,
+                      row, col, t=0.5):
+    """ 
+    Splat the backward m motion at [row][col] onto splatty.
+    frame0 should come first chronologically.
+    
+    """
+    h = frame0.shape[0]
+    w = frame0.shape[1]
+    motion = -1*backward[row][col]
+    # Scale to cartesian space
+    ux = motion[0]/w
+    uy = motion[1]/h
+    (x, y) = image_to_cartesian(frame0, col, row)
+    # xp and yp are the coordinates in the interpolated image.
+    xp = x + t*ux
+    yp = y + t*uy
+    splats = splat(splatty, xp, yp)
+    for s in splats:
+        if check_indices(splatty, s[0], s[1]):
+            old = splatty[s[1]][s[0]]
+            if np.isnan(old[0]) or np.isnan(old[1]):
+                splatty[s[1]][s[0]] = motion
+                pts[s[1]][s[0]] = follow_intensity(frame0, frame1,
+                                                   motion, s[1], s[0], t)
+            else:
+                new_ptc = follow_intensity(frame0, frame1,
+                                           motion, s[1], s[0], t)
+                if (new_ptc < pts[s[1]][s[0]]):
+                    splatty[s[1]][s[0]] = motion
+                    pts[s[1]][s[0]] = new_ptc
+
+def splat_backward(backward, frame0, frame1, splatty,
                   row, col, t=0.5):
     """ 
     Splat the backward m motion at [row][col] onto splatty.
@@ -214,6 +275,7 @@ def splat_backward(backward, frame0, frame1, splatty,
                     splatty[s[1]][s[0]] = motion
 
 
+
 def splat_motions_bidi(forward, backward, frame0, frame1, t=0.5):
     """ Bidirectionally splat motions between frame 0 and frame1,
     with forward and backward flows. Return the interpolated flows. """
@@ -222,14 +284,19 @@ def splat_motions_bidi(forward, backward, frame0, frame1, t=0.5):
     splatty = np.zeros_like(forward)
     # Flows start out undefined
     splatty[:] = np.NAN
+    ptcs = np.ones((h, w)) * float('inf')
     for row in tqdm(range(h), position=True, desc="splatting forward"):
         for col in range(w):
-            splat_forward(forward, frame0, frame1, splatty,
-                          row, col, t)
+            splat_forward_v2(forward, frame0, frame1, splatty, ptcs,
+                             row, col, t)
+            #splat_forward(forward, frame0, frame1, splatty,
+            #              row, col, t)
     for row in tqdm(range(h), position=True, desc="splatting backward"):
         for col in range(w):
-            splat_backward(backward, frame0, frame1, splatty,
+            splat_backward_v2(backward, frame0, frame1, splatty, ptcs,
                            row, col, t)
+            #splat_forward(forward, frame0, frame1, splatty,
+            #              row, col, t)
 
     # Fill holes twice to get rid of big holes
     fill_holes(splatty)
