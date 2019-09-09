@@ -86,16 +86,15 @@ def color_transfer_weighted(frame, flow0, flowt, dest,
     # Get the flow for previous timestwp
     q_flow = flow0[row][col]
     # Get the previous frame cartesian coords
-    (qx, qy) = pix.image_to_cartesian(frame, col, row)
     
-    ux = q_flow[0]/w
-    uy = -q_flow[1]/h
+    ux = q_flow[0]
+    uy = q_flow[1]
 
     # These are the target coordinates in the interpolated
     # image. We need to find all frames within 0.5 pixels
     # of this spot
-    px = qx + t*ux
-    py = qy + t*uy
+    px = col + t*ux
+    py = row + t*uy
     
     # These are the indices of all the target pixels. We will
     # add to each one...

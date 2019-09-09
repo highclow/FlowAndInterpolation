@@ -18,67 +18,8 @@ __email__      = "hacoo36@gmail.com"
 __status__     = "Prototype"
 __repo__       = "https://github.com/hacoo/framebooster.git" 
 
-def image_to_cartesian(f, x, y):
-    """ Converts coordinates in image space (zero at top left,
-    reversed y) to cartesian space (with bounds at -0.5, 0.5) """
-    h = f.shape[0]
-    w = f.shape[1]
-    ix = x / w - 0.5
-    iy = 0.5 - y / h
-    return (ix, iy)
-    
-def cartesian_to_image(f, x, y):
-    """ Converts the cartesian coordinate(x, y) to image 
-    coordinate(x, y). Returns actual coordinates -- NOT
-    indices. """
-    h = f.shape[0]
-    w = f.shape[1]
-    cx = (x + 0.5) * w
-    cy = (0.5 - y) * h
-    return (cx, cy)
-    
-def vector_cartesian_to_image(f, dx, dy):
-    """ scales a vector (dx,dy) to image space dimensions. """
-    h = f.shape[0]
-    w = f.shape[1]
-    return (w*dx, h*dy)
-    
-def vector_mage_to_cartesian(f, dx, dy):
-    """ Scales a vector (dx, dy) to cartesian space dimensions. """
-    h = f.shape[0]
-    w = f.shape[1]
-    return (dx/w, dy/h)
-    
-def cartesian_to_index(f, x, y):
-    (ix, iy) = cartesian_to_image(f, x, y)
-    return (int(round(ix)), int(round(iy)))
-
     
 def splat(f, x, y):
-    """ 
-    Return the indices of pixels (as (x, y), not (row, col))
-    of all pixels in a square 4-pixel splat centered at (x,y)
-    """    
-    h = f.shape[0]
-    w = f.shape[1]
-    center = cartesian_to_index(f, x, y)
-    pixels = [[center[0], center[1]], [center[0], center[1]], [center[0], center[1]], [center[0], center[1]]]
-    if x > center[0]:
-        pixels[1][0] += 1
-        pixels[3][0] += 1
-    else:
-        pixels[1][0] -= 1
-        pixels[3][0] -= 1
-    if y > center[1]:
-        pixels[2][1] += 1
-        pixels[3][1] += 1
-    else:
-        pixels[2][1] -= 1
-        pixels[3][1] -= 1
-    return pixels
-
-
-def splat_v2(f, x, y):
     """ 
     Return the indices of pixels (as (x, y), not (row, col))
     of all pixels in a square 4-pixel splat centered at (x,y)
@@ -86,7 +27,7 @@ def splat_v2(f, x, y):
     h = f.shape[0]
     w = f.shape[1]
     center = [int(round(x)), int(round(y))]
-    pixels = [center for _ in range(4)]
+    pixels = [center.copy() for _ in range(4)]
     if x > center[0]:
         pixels[1][0] += 1
         pixels[3][0] += 1
@@ -147,7 +88,7 @@ def splat_forward(forward, frame0, frame1, splatty, pts, t=0.5):
         # xp and yp are the coordinates in the interpolated image
         xp = col + motion_cart[row][col][0]
         yp = row + motion_cart[row][col][1]
-        splats = splat_v2(splatty, xp, yp)
+        splats = splat(splatty, xp, yp)
         for s in splats:
           if check_indices(splatty, s[0], s[1]):
             motion = forward[row][col]
@@ -175,7 +116,7 @@ def splat_backward(backward, frame0, frame1, splatty, pts, t=0.5):
         # xp and yp are the coordinates in the interpolated image.
         xp = col + motion_cart[row][col][0]
         yp = row + motion_cart[row][col][1]
-        splats = splat_v2(splatty, xp, yp)
+        splats = splat(splatty, xp, yp)
         for s in splats:
           if check_indices(splatty, s[0], s[1]):
             motion = -1*backward[row][col]
@@ -272,11 +213,6 @@ def filter_not_nans(f):
             no_nans.append((r,c))
     return no_nans
 
-
-def check_bounds_cartesian(f, x, y):
-    """ Returns true if (x,y) is in the cartesian bounds 
-    of f, else returns false. """
-    return (-0.5 <= x < 0.5) and (-0.5 <= y < 0.5)
 
 def check_indices(f, x, y):
     """ Check indices [y, x] """
