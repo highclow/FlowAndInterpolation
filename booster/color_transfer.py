@@ -27,15 +27,16 @@ def transfer_color(f0, f1, dest, flow, row, col, t=0.5):
     h = dest.shape[0]
     w = dest.shape[1]
     u = flow[row][col]
-    ux = u[0]/w
-    uy = -u[1]/h
-    (x, y) = pix.image_to_cartesian(flow, col, row)
-    xp0 = x - t*ux
-    yp0 = y - t*uy
-    xp1 = x + t*ux
-    yp1 = y + t*uy
-    (xi0, yi0) = pix.cartesian_to_index(flow, xp0, yp0)
-    (xi1, yi1) = pix.cartesian_to_index(flow, xp1, yp1)
+    ux = u[0]
+    uy = u[1]
+    xp0 = col - t*ux
+    yp0 = row - t*uy
+    xp1 = col + (1-t)*ux
+    yp1 = row + (1-t)*uy
+    xi0 = int(round(xp0))
+    yi0 = int(round(yp0))
+    xi1 = int(round(xp1))
+    yi1 = int(round(yp1))
     if (pix.check_indices(flow, xi0, yi0) and
         pix.check_indices(flow, xi1, yi1)):
         #dest[row][col] = (f0[yi0][xi0])/2 + (f1[yi1][xi1])/2
@@ -132,15 +133,16 @@ def masked_transfer_color(f0, f1, dest, flow, imask, row, col, t=0.5):
     h = dest.shape[0]
     w = dest.shape[1]
     u = flow[row][col]
-    ux = u[0]/w
-    uy = -u[1]/h
-    (x, y) = pix.image_to_cartesian(flow, col, row)
-    xp0 = x - t*ux
-    yp0 = y - t*uy
-    xp1 = x + t*ux
-    yp1 = y + t*uy
-    (xi0, yi0) = pix.cartesian_to_index(flow, xp0, yp0)
-    (xi1, yi1) = pix.cartesian_to_index(flow, xp1, yp1)
+    ux = u[0]
+    uy = u[1]
+    xp0 = col - t*ux
+    yp0 = row - t*uy
+    xp1 = col + (1-t)*ux
+    yp1 = row + (1-t)*uy
+    xi0 = int(round(xp0))
+    yi0 = int(round(yp0))
+    xi1 = int(round(xp1))
+    yi1 = int(round(yp1))
     if (pix.check_indices(flow, xi0, yi0) and
         pix.check_indices(flow, xi1, yi1)):
         f0vis = imask[row][col][0]
@@ -184,16 +186,17 @@ def find_occlusion(forward, backward, interp, imask, row, col, t=0.5):
     h = interp.shape[0]
     w = interp.shape[1]
     im = interp[row][col]
-    ux = im[0]/w
-    uy = -im[1]/h
-    (x, y) = pix.image_to_cartesian(interp, col, row)
-    xp0 = x - t*ux
-    yp0 = y - t*uy
-    xp1 = x + t*ux
-    yp1 = y + t*uy
+    ux = im[0]
+    uy = im[1]
+    xp0 = col - t*ux
+    yp0 = row - t*uy
+    xp1 = col + (1-t)*ux
+    yp1 = row + (1-t)*uy
     # Get each motion vector
-    (xi0, yi0) = pix.cartesian_to_index(forward, xp0, yp0)
-    (xi1, yi1) = pix.cartesian_to_index(backward, xp1, yp1)
+    xi0 = int(round(xp0))
+    yi0 = int(round(yp0))
+    xi1 = int(round(xp1))
+    yi1 = int(round(yp1))
     if (pix.check_indices(forward, xi0, yi0) and
         pix.check_indices(backward, xi1, yi1)):
 

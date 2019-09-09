@@ -10,7 +10,7 @@ import cv2
 import time
 import argparse
 import os
-import pyflow
+#import pyflow
 import booster.pixels as pix
 import booster.color_transfer as ct
 
@@ -24,7 +24,7 @@ nInnerFPIterations = 1
 nSORIterations = 30
 colType = 0  # 0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))
 # Interpolate rate
-t = 0.5 #
+t = 0.3 #
 
 def interpolation(im1, im2):
 #  s = time.time()
@@ -40,16 +40,16 @@ def interpolation(im1, im2):
 #  print('Time Taken: %.2f seconds for image of size (%d, %d, %d)' % (
 #          e - s, im1.shape[0], im1.shape[1], im1.shape[2]))
   s = time.time()
-  #flow = pix.splat_motions_bidi(forward, backward,
-  #                              im1, im2, t)
   forward = np.load('./forward.npy')
   backward = np.load('./backward.npy')
-  uForward = forward[:,:,0].copy(order='C')
-  vForward = forward[:,:,1].copy(order='C')
-  uBackward = backward[:,:,0].copy(order='C')
-  vBackward = backward[:,:,1].copy(order='C')
-  flow2 = pyflow.splat_motions(uForward, vForward, uBackward, vBackward,
-                               im1, im2, t)
+  flow = pix.splat_motions_bidi(forward, backward,
+                                im1, im2, t)
+#  uForward = forward[:,:,0].copy(order='C')
+#  vForward = forward[:,:,1].copy(order='C')
+#  uBackward = backward[:,:,0].copy(order='C')
+#  vBackward = backward[:,:,1].copy(order='C')
+#  flow2 = pyflow.splat_motions(uForward, vForward, uBackward, vBackward,
+#                               im1, im2, t)
   flow = cv2.GaussianBlur(flow, (11, 11), 10)
   interpolated = ct.color_transfer_occlusions(im1,
                                               im2,
