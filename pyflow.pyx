@@ -21,7 +21,7 @@ cdef extern from "src/SplatMotionsWrapper.h":
                              const double *vxForward, const double *vyForward,
                              const double *vxBackward, const double *vyBackward,
                              const double * Im1, const double * Im2,
-                             int colType, int h, int w, int c, float t);
+                             int colType, int h, int w, int c, double t);
 
 
 def coarse2fine_flow(np.ndarray[double, ndim=3, mode="c"] Im1 not None,
@@ -64,7 +64,7 @@ def splat_motions(np.ndarray[double, ndim=2, mode="c"] vxForward not None,
                   np.ndarray[double, ndim=2, mode="c"] vyBackward not None,
                   np.ndarray[double, ndim=3, mode="c"] Im1 not None,
                   np.ndarray[double, ndim=3, mode="c"] Im2 not None,
-                  int colType=0, float t = 0.5):
+                  double t = 0.5, int colType=0):
     """
     Output Format:
       double * vx, double * vy,
