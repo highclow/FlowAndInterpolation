@@ -2,7 +2,7 @@
 #include "Matrix.h"
 
 
-void SplatMotions::splatForward(DImage& vx, DImage& vy, UCImage &flag, DImage &pts, const DImage& vxForward, const DImage& vyForward, const DImage& Im1, const DImage& Im2, float t){
+void SplatMotions::splatForward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxForward, const DImage& vyForward, const DImage& Im1, const DImage& Im2, double  t){
     
     const int nRows = vxForward.height();
     const int nCols = vxForward.width();
@@ -13,31 +13,23 @@ void SplatMotions::splatForward(DImage& vx, DImage& vy, UCImage &flag, DImage &p
     const double *pIm1 = Im1.data();
     const double *pIm2 = Im2.data();
 
-    double mx, my, ux, uy, x, y, xp, yp;
+    double ux, uy, xp, yp;
     std::vector<int> pixels(8);
     for (int i=0; i != nRows; ++i) {
       for (int j=0; j != nCols; ++j) {
-        double mx = *pvxForward;
-        double my = *pvyForward; 
-        double ux = mx / nCols;
-        double uy = -my / nRows;
-        double x = j / nCols - 0.5;
-        double y = 0.5 - i / nRows;
-        double xp = x + t * ux;
-        double yp = y + t * uy;
-        splat(pixels, nRows, nCols, i, j);
+        ux = *pvxForward;
+        uy = *pvyForward; 
+        xp = j + t * ux;
+        yp = i + t * uy;
+        std::cout << ux << " " << uy << " " << xp << " " << yp << std::endl;
+        splat(pixels, xp, yp);
 
         for (int k=0; k != 4; ++k) {
-          int col = k<<1;
+          int col = k << 1;
           int row = col + 1;
           int offset = nCols * i + j;
+          cin.get();
           if (checkIndices(nRows, nCols, pixels[col], pixels[row])) {
-            if (flag[offset] == 0) {
-              vx[offset] = mx;
-              vy[offset] = my;
-              flag[offset] = 1;
-            } else {
-            }
           }
         }
 
@@ -67,14 +59,14 @@ void SplatMotions::splatForward(DImage& vx, DImage& vy, UCImage &flag, DImage &p
 //                    splatty[s[1]][s[0]] = motion
 }
 
-void SplatMotions::splatMotionsBidirect(DImage& vx, DImage& vy, const DImage& vxForward, const DImage& vyForward, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, float t){
+void SplatMotions::splatMotionsBidirect(DImage& vx, DImage& vy, const DImage& vxForward, const DImage& vyForward, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, double t){
 
     const int nRows = vxForward.height();
     const int nCols = vxForward.width();
-    UCImage flag;
-    flag.allocate(nRows, nCols, 1);
+    std::cout << nRows << " " << nCols << std::endl;
     DImage pts;
     pts.allocate(nRows, nCols, 1);
+    splatForward(vx, vy, pts, vxForward, vyForward, Im1, Im2, t);
 
 //    h = frame0.shape[0]
 //    w = frame0.shape[1]

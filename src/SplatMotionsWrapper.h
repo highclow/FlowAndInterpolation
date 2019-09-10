@@ -6,4 +6,4 @@ extern void SplatMotionsWrapper(double *vx, double *vy,
                                 const double *vxForward, const double *vyForward,
                                 const double *vxBackward, const double *vyBackward,
                                 const double * Im1, const double * Im2,
-                                int colType, int h, int w, int c, float t);
+                                int colType, int h, int w, int c, double t);
