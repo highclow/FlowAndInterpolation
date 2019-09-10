@@ -13,6 +13,8 @@ import shutil
 import subprocess
 from tqdm import tqdm
 import booster.flo as flo
+from scipy.spatial import distance
+
 
 
 __author__     = "Henry Cooney"
@@ -182,10 +184,14 @@ def clip(f, xr, yr):
     
 def eucdist(c1, c2):
     """ Return euclidean distance between two colors """
-    c1 = c1.astype('float')
-    c2 = c2.astype('float')
-    return math.sqrt((c1[0]-c2[0])**2 + (c1[1]-c2[1])**2
-                     + (c1[2]-c2[2])**2)
+    t = c1 - c2
+    return np.sqrt(np.dot(t, t))
+
+
+def squaredist(c1, c2):
+    """ Return euclidean distance between two colors """
+    t = c1 - c2
+    return np.dot(t, t)
 
 
 def save_video_frames(frames, path):

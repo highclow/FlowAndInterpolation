@@ -219,8 +219,3 @@ def find_occlusion(forward, backward, interp, imask, row, col, t=0.5):
         imask[row][col][0] = 1
 
     
-
-def eucdist(u, v):
-    """ Return the euclidean distance between vectors u and v """
-    return math.sqrt((u[0]-v[0])**2 + (u[1]-v[1])**2)
-    

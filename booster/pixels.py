@@ -26,7 +26,7 @@ def splat(f, x, y):
     """
     h = f.shape[0]
     w = f.shape[1]
-    center = [int(round(x)), int(round(y))]
+    center = [int(x+0.5), int(y+0.5)]
     pixels = [center.copy() for _ in range(4)]
     if x > center[0]:
         pixels[1][0] += 1
@@ -49,30 +49,24 @@ def follow_intensity(frame0, frame1, u,
     [row][col], and return the intensity difference between
     the forward and backward pixel. 
 
-    u should already be scaled.
-
     frame0 and frame1  should be in BGR.
     """
-    h = frame0.shape[0]
-    w = frame0.shape[1]
-    ux = u[0]
-    uy = u[1]
-    xp0 = col - t*ux
-    yp0 = row - t*uy
-    xp1 = col + (1-t)*ux
-    yp1 = row + (1-t)*uy
+    xp0 = col - t*u[0] + 0.5
+    yp0 = row - t*u[1] + 0.5
+    xp1 = u[0] + xp0
+    yp1 = u[1] + xp1
 
-    xi0 = int(round(xp0))
-    yi0 = int(round(yp0))
-    xi1 = int(round(xp1))
-    yi1 = int(round(yp1))
+    xi0 = int(xp0)
+    yi0 = int(yp1)
+    xi1 = int(xp1)
+    yi1 = int(yp1)
     if (check_indices(frame0, xi0, yi0) and
         check_indices(frame1, xi1, yi1)):
         i0=frame0[yi0][xi0]
         i1=frame1[yi1][xi1]
-        return ut.eucdist(i0, i1)
+        return ut.squaredist(i0, i1)
     else:
-        return 2 # default value if going OOB
+        return 4 # default value if going OOB
         
 
 def splat_forward(forward, frame0, frame1, splatty, pts, t=0.5):
@@ -80,18 +74,16 @@ def splat_forward(forward, frame0, frame1, splatty, pts, t=0.5):
     h = frame0.shape[0]
     w = frame0.shape[1]
     # Scale to cartesian space
-    motion_cart = forward.copy()
-    motion_cart[:,:,0] = motion_cart[:,:,0] * t
-    motion_cart[:,:,1] = motion_cart[:,:,1] * t
-    for row in tqdm(range(h), position=True, desc="splatting forward"):
-      for col in range(w):
+    coords = forward.copy()
+    coords[:,:,0] = coords[:,:,0] * t + np.arange(w)
+    coords[:,:,1] = coords[:,:,1] * t + np.arange(h)[:,np.newaxis]
+    coords = coords.reshape((h*w,2))
+    motions = forward.reshape((h*w,2))
+    for p, motion in tqdm(zip(coords, motions), position=True, desc="forward"):
         # xp and yp are the coordinates in the interpolated image
-        xp = col + motion_cart[row][col][0]
-        yp = row + motion_cart[row][col][1]
-        splats = splat(splatty, xp, yp)
+        splats = splat(splatty, p[0], p[1])
         for s in splats:
           if check_indices(splatty, s[0], s[1]):
-            motion = forward[row][col]
             new_ptc = follow_intensity(frame0, frame1, motion, s[1], s[0], t)
             if new_ptc < pts[s[1]][s[0]]:
               splatty[s[1]][s[0]] = motion
@@ -107,19 +99,16 @@ def splat_backward(backward, frame0, frame1, splatty, pts, t=0.5):
     h = frame0.shape[0]
     w = frame0.shape[1]
     # Scale to cartesian space
-    motion_cart = backward.copy()
-    motion_cart[:,:,0] = motion_cart[:,:,0] * (1-t)
-    motion_cart[:,:,1] = motion_cart[:,:,1] * (1-t)
-    for row in tqdm(range(h), position=True, desc="splatting backward"):
-      for col in range(w):
-        # Scale to cartesian space
+    coords = backward.copy()
+    coords[:,:,0] = coords[:,:,0] * (1-t) + np.arange(w)
+    coords[:,:,1] = coords[:,:,1] * (1-t) + np.arange(h)[:,np.newaxis]
+    coords = coords.reshape((h*w,2))
+    motions = -backward.reshape((h*w,2))
+    for p, motion in tqdm(zip(coords, motions), position=True, desc="backward"):
         # xp and yp are the coordinates in the interpolated image.
-        xp = col + motion_cart[row][col][0]
-        yp = row + motion_cart[row][col][1]
-        splats = splat(splatty, xp, yp)
+        splats = splat(splatty, p[0], p[1])
         for s in splats:
           if check_indices(splatty, s[0], s[1]):
-            motion = -1*backward[row][col]
             new_ptc = follow_intensity(frame0, frame1, motion, s[1], s[0], t)
             if new_ptc < pts[s[1]][s[0]]:
               splatty[s[1]][s[0]] = motion
