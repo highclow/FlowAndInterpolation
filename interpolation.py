@@ -24,7 +24,7 @@ nInnerFPIterations = 1
 nSORIterations = 30
 colType = 0  # 0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))
 # Interpolate rate
-t = 0.3 #
+t = 0.7 #
 
 def interpolation(im1, im2):
 #  s = time.time()
@@ -51,12 +51,12 @@ def interpolation(im1, im2):
 #  flow2 = pyflow.splat_motions(uForward, vForward, uBackward, vBackward,
 #                               im1, im2, t)
   flow = cv2.GaussianBlur(flow, (11, 11), 10)
-  interpolated = ct.color_transfer_occlusions(im1,
-                                              im2,
-                                              forward,
-                                              backward,
-                                              flow,
-                                              t)
+  interpolated = ct.masked_transfer_color(im1,
+                                          im2,
+                                          forward,
+                                          backward,
+                                          flow,
+                                          t)
   e = time.time()
   print('Time Taken: %.2f seconds for image of size (%d, %d, %d)' % (
           e - s, im1.shape[0], im1.shape[1], im1.shape[2]))

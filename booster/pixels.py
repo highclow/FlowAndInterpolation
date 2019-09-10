@@ -245,11 +245,7 @@ def flowdist(m0, m1):
     # is just 1:
     assert(m0.shape == (2,))
     assert(m1.shape == (2,))
-    m0h = np.array([m0[0], m0[1], 1])
-    m1h = np.array([m1[0], m1[1], 1])
-    top = m0h.dot(m1h)
-    
-    return 1 - (top / (np.linalg.norm(m0h) * np.linalg.norm(m1h)))
+    return 1 - (np.dot(m0,m1)+1) / (np.sqrt((np.dot(m0,m0)+1) * (np.dot(m1,m1)+1)))
 
 def patchdist(p0, p1):
     """ Compute the distance between two patches. Patches

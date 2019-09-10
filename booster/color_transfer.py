@@ -125,33 +125,40 @@ def add_weighted_color(q, p, dest, px, py, ws, r, t=0.5):
     ws[row][col] += weight
     
 
-
-def masked_transfer_color(f0, f1, dest, flow, imask, row, col, t=0.5):
+def masked_transfer_color(f0, f1, forward, backward, interp, t=0.5):
     """ Find and set the transfer color for pixel [row][cow] """
     # for now, just defauly to using the value at f1:
+    dest = np.copy(f0)
     h = dest.shape[0]
     w = dest.shape[1]
-    u = flow[row][col]
-    ux = u[0]
-    uy = u[1]
-    xp0 = col - t*ux
-    yp0 = row - t*uy
-    xp1 = col + (1-t)*ux
-    yp1 = row + (1-t)*uy
-    xi0 = int(round(xp0))
-    yi0 = int(round(yp0))
-    xi1 = int(round(xp1))
-    yi1 = int(round(yp1))
-    if (pix.check_indices(flow, xi0, yi0) and
-        pix.check_indices(flow, xi1, yi1)):
-        f0vis = imask[row][col][0]
-        f1vis = imask[row][col][1]
-        if f0vis >= 1 and f1vis >= 1:
-            dest[row][col] = (f0[yi0][xi0])/2 + (f1[yi1][xi1])/2
-        elif f1vis >= 1:
-            dest[row][col] = f1[yi1][xi1]
-        else:
-            dest[row][col] = f0[yi0][xi0]
+    for row in tqdm(range(h), position=True, desc="color transfer"):
+      for col in range(w):
+        u = interp[row][col]
+        xp0 = col - t*u[0] + 0.5
+        yp0 = row - t*u[1] + 0.5
+        xp1 = u[0] + xp0
+        yp1 = u[1] + yp0
+        xi0 = int(xp0)
+        yi0 = int(yp0)
+        xi1 = int(xp1)
+        yi1 = int(yp1)
+        if (pix.check_indices(interp, xi0, yi0) and 
+            pix.check_indices(interp, xi1, yi1)):
+
+            fvec = forward[yi0][xi0]
+            bvec = -backward[yi1][xi1]
+
+            d0 = pix.flowdist(fvec, u)
+            d1 = pix.flowdist(bvec, u)
+            diff = abs(d0-d1)
+
+            if diff < 0.1:
+                dest[row][col] = (f0[yi0][xi0] + f1[yi1][xi1]) * 0.5
+            elif d0 > d1:
+                dest[row][col] = f1[yi1][xi1]
+            else:
+                dest[row][col] = f0[yi0][xi0]
+    return dest
             
     
 def color_transfer_occlusions(f0, f1, forward, backward, interp,
@@ -159,61 +166,78 @@ def color_transfer_occlusions(f0, f1, forward, backward, interp,
     """ Transfer colors to the intermediate frame between f0 and
     f1, with interpolated flow interp. Returns the interpolated
     frame. """
-    h = interp.shape[0]
-    w = interp.shape[1]
-    new_frame = np.copy(f0)
-    imask = find_occlusions(forward, backward, interp, t)
-    for row in tqdm(range(h), position=True, desc="color transfer"):
-        for col in range(w):
-            masked_transfer_color(f0, f1, new_frame, interp, imask,
-                                 row, col, t)
-    return new_frame
+#    imask = find_occlusions(forward, backward, interp, t)
+    return masked_transfer_color(f0, f1, forward, backward, interp, t)
     
+
 def find_occlusions(forward, backward, interp,
                     t=0.5):
     """ Generate the occlusion mask for the interpolated frame. """
     h = interp.shape[0]
     w = interp.shape[1]
     imask = np.zeros((h, w, 2), dtype='uint8')
+    # Default to using first frame
+    imask[:,:,0] = 1
     for row in tqdm(range(h), position=True, desc="generating occlusion mask"):
-        for col in range(w):
-            find_occlusion(forward, backward, interp, imask,
-                           row, col, t)
+      for col in range(w):
+        im = interp[row][col]
+        xp0 = col - t*im[0] + 0.5
+        yp0 = row - t*im[1] + 0.5
+        xp1 = im[0] + xp0
+        yp1 = im[1] + yp0
+        # Get each motion vector
+        xi0 = int(xp0)
+        yi0 = int(yp0)
+        xi1 = int(xp1)
+        yi1 = int(yp1)
+        if (pix.check_indices(forward, xi0, yi0) and
+            pix.check_indices(backward, xi1, yi1)):
+
+            fvec = forward[yi0][xi0]
+            bvec = -backward[yi1][xi1]
+
+            d0 = pix.flowdist(fvec, im)
+            d1 = pix.flowdist(bvec, im)
+            diff = abs(d0-d1)
+
+            if diff < 0.1:
+               imask[row][col][1] = 1
+            else:
+              if d0 > d1:
+                imask[row][col][0] = 0
+                imask[row][col][1] = 1
+
     return imask
 
+
 def find_occlusion(forward, backward, interp, imask, row, col, t=0.5):
-    h = interp.shape[0]
-    w = interp.shape[1]
     im = interp[row][col]
-    ux = im[0]
-    uy = im[1]
-    xp0 = col - t*ux
-    yp0 = row - t*uy
-    xp1 = col + (1-t)*ux
-    yp1 = row + (1-t)*uy
+    xp0 = col - t*im[0] + 0.5
+    yp0 = row - t*im[1] + 0.5
+    xp1 = im[0] + xp0
+    yp1 = im[1] + yp0
     # Get each motion vector
-    xi0 = int(round(xp0))
-    yi0 = int(round(yp0))
-    xi1 = int(round(xp1))
-    yi1 = int(round(yp1))
+    xi0 = int(xp0)
+    yi0 = int(yp0)
+    xi1 = int(xp1)
+    yi1 = int(yp1)
     if (pix.check_indices(forward, xi0, yi0) and
         pix.check_indices(backward, xi1, yi1)):
 
         fvec = forward[yi0][xi0]
-        bvec = -1*backward[yi1][xi1]
+        bvec = -backward[yi1][xi1]
         
         d0 = pix.flowdist(fvec, im)
         d1 = pix.flowdist(bvec, im)
         diff = abs(d0-d1)
 
-        if d0 <= d1:
-            imask[row][col][0] = 1
-            if diff < 0.1:
-                imask[row][col][1] = 1
+        if diff < 0.1:
+           imask[row][col][:] = 1
         else:
+          if d0 <= d1:
+            imask[row][col][0] = 1
+          else:
             imask[row][col][1] = 1
-            if diff < 0.1:
-                imask[row][col][0] = 1
     else:
         # Default to using first frame
         imask[row][col][0] = 1
