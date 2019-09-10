@@ -10,7 +10,7 @@ import cv2
 import time
 import argparse
 import os
-#import pyflow
+import pyflow
 import booster.pixels as pix
 import booster.color_transfer as ct
 
@@ -27,21 +27,21 @@ colType = 0  # 0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))
 t = 0.7 #
 
 def interpolation(im1, im2):
-#  s = time.time()
-#  uForward, vForward, im2WForward = pyflow.coarse2fine_flow(im1, im2,
-#          alpha, ratio, minWidth, nOuterFPIterations, nInnerFPIterations,
-#          nSORIterations, colType)
-#  uBackward, vBackward, im2WBackward = pyflow.coarse2fine_flow(im2, im1,
-#          alpha, ratio, minWidth, nOuterFPIterations, nInnerFPIterations,
-#          nSORIterations, colType)
-#  forward = np.concatenate((uForward[..., None], vForward[..., None]), axis=2)
-#  backward = np.concatenate((uBackward[..., None], vBackward[..., None]), axis=2)
-#  e = time.time()
-#  print('Time Taken: %.2f seconds for image of size (%d, %d, %d)' % (
-#          e - s, im1.shape[0], im1.shape[1], im1.shape[2]))
   s = time.time()
-  forward = np.load('./forward.npy')
-  backward = np.load('./backward.npy')
+  uForward, vForward, im2WForward = pyflow.coarse2fine_flow(im1, im2,
+          alpha, ratio, minWidth, nOuterFPIterations, nInnerFPIterations,
+          nSORIterations, colType)
+  uBackward, vBackward, im2WBackward = pyflow.coarse2fine_flow(im2, im1,
+          alpha, ratio, minWidth, nOuterFPIterations, nInnerFPIterations,
+          nSORIterations, colType)
+  forward = np.concatenate((uForward[..., None], vForward[..., None]), axis=2)
+  backward = np.concatenate((uBackward[..., None], vBackward[..., None]), axis=2)
+  e = time.time()
+  print('Time Taken: %.2f seconds for image of size (%d, %d, %d)' % (
+          e - s, im1.shape[0], im1.shape[1], im1.shape[2]))
+  s = time.time()
+#  forward = np.load('./forward.npy')
+#  backward = np.load('./backward.npy')
   flow = pix.splat_motions_bidi(forward, backward,
                                 im1, im2, t)
 #  uForward = forward[:,:,0].copy(order='C')
