@@ -1,6 +1,24 @@
+#include <limits>
 #include "SplatMotions.h"
 #include "Matrix.h"
 
+
+void SplatMotions::fillHoles(DImage& vx, DImage& vy) {
+    const double *pvx = vx.data();
+    const double *pvy = vy.data();
+    const int nPixels = vx.npixels();
+    std::vector<int> indices(nPixels); 
+    std::vector<double> sum(nPixels);
+    std::vector<int> count(nPixels);
+    int cnt = 0;
+    for (int i=0; i != nPixels; ++i) {
+      if (pvx[i] == std::numeric_limits<double>::max() || 
+          pvy[i] == std::numeric_limits<double>::max()) {
+        indices[cnt] = i;
+//        for (int m1=-1; m1!=2; ++y)
+      }
+    }
+}
 
 void SplatMotions::splatForward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxForward, const DImage& vyForward, const DImage& Im1, const DImage& Im2, double  t){
     

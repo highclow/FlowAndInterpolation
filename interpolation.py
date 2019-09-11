@@ -23,7 +23,6 @@ nOuterFPIterations = 7
 nInnerFPIterations = 1
 nSORIterations = 30
 colType = 0  # 0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))
-# Interpolate rate
 
 def interpolation(im1, im2, ts):
   s = time.time()
@@ -65,6 +64,7 @@ if __name__ == '__main__':
   im2 = cv2.imread('examples/w1SyWlV9444_00139_s000-00411.jpg')
   im1 = im1.astype(float) / 255.
   im2 = im2.astype(float) / 255.
+# Interpolate rate
   ts = np.arange(0.0, 1.0, 0.1)
   interpolated = interpolation(im1, im2, ts)
   for k, interp in zip(ts,interpolated):

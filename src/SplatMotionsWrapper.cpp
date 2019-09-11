@@ -4,6 +4,7 @@
 // simpler.
 // Author: Deepak Pathak (c) 2016
 
+#include <limits>
 #include "SplatMotionsWrapper.h"
 #include "Image.h"
 #include "SplatMotions.h"
@@ -41,8 +42,8 @@ void SplatMotionsWrapper(double *vx, double *vy,
   ImFormatted1.setColorType(colType);
   ImFormatted2.setColorType(colType);
 
-  vxFormatted.allocate(w, h, 1);
-  vyFormatted.allocate(w, h, 1);
+  vxFormatted.setValue(std::numeric_limits<double>::max(), w, h);
+  vyFormatted.setValue(std::numeric_limits<double>::max(), w, h);
 
   // call bidirection splat motions backend
   SplatMotions::splatMotionsBidirect(vxFormatted, vyFormatted,
