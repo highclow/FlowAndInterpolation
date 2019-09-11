@@ -12,6 +12,7 @@ public:
     static void splatForward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxForward, const DImage& vyForward, const DImage& Im1, const DImage& Im2, double t);
     static void splatBackward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, double t);
     static void fillHoles(DImage& vx, DImage& vy);
+    static void colorTransfer(DImage& dest, const DImage& interp, const DImage& Im1, const DImage& Im2, const DImage& forward, const DImage& backward, double t);
 
 
     static inline void splat(std::vector<int> &pixels, double x, double y){
@@ -45,6 +46,12 @@ public:
         ++p2;
       }
       return sum;
+    }
+
+    static inline double flowDistance(double fx, double fy, double ux, double uy) {
+      double distance = fx * ux + fy * uy + 1;
+      double norm = sqrt((fx*fx + fy*fy + 1) *  (ux*ux + uy*uy + 1));
+      return 1 - distance / norm;
     }
 
     static inline double intensity(const DImage& Im1, const DImage& Im2, double ux, double uy, int row, int col, double t) {

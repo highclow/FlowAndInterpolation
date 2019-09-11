@@ -52,11 +52,11 @@ void Coarse2FineFlowWrapper(double * vx, double * vy, double * warpI2,
 }
 
 
-void FlowInterpolationWrapper(double *vx, double *vy,
-                              const double *vxForward, const double *vyForward,
-                              const double *vxBackward, const double *vyBackward,
-                              const double *Im1, const double *Im2,
-                              int colType, int h, int w, int c, double t) {
+void SplatMotionsWrapper(double *vx, double *vy,
+                         const double *vxForward, const double *vyForward,
+                         const double *vxBackward, const double *vyBackward,
+                         const double *Im1, const double *Im2,
+                         int colType, int h, int w, int c, double t) {
   DImage ImFormatted1, ImFormatted2;
   DImage vxForwardFormatted, vyForwardFormatted;
   DImage vxBackwardFormatted, vyBackwardFormatted;
@@ -76,16 +76,12 @@ void FlowInterpolationWrapper(double *vx, double *vy,
   memcpy(vyBackwardFormatted.pData, vyBackward, h * w * sizeof(double));
   memcpy(ImFormatted1.pData, Im1, h * w * c * sizeof(double));
   memcpy(ImFormatted2.pData, Im2, h * w * c * sizeof(double));
+  vxFormatted.setValue(std::numeric_limits<double>::max(), w, h);
+  vyFormatted.setValue(std::numeric_limits<double>::max(), w, h);
 
-  vxForwardFormatted.setColorType(1);
-  vyForwardFormatted.setColorType(1);
-  vxBackwardFormatted.setColorType(1);
-  vyBackwardFormatted.setColorType(1);
   ImFormatted1.setColorType(colType);
   ImFormatted2.setColorType(colType);
 
-  vxFormatted.setValue(std::numeric_limits<double>::max(), w, h);
-  vyFormatted.setValue(std::numeric_limits<double>::max(), w, h);
 
   // call bidirection splat motions backend
   FlowInterpolation::splatMotionsBidirect(vxFormatted, vyFormatted,
@@ -106,6 +102,54 @@ void FlowInterpolationWrapper(double *vx, double *vy,
   vyBackwardFormatted.clear();
   vxFormatted.clear();
   vyFormatted.clear();
+
+  return;
+}
+
+
+void ColorTransferWrapper(double *dest, const double *flow,
+                          const double *Im1, const double *Im2,
+                          const double *forward, const double *backward,
+                          int colType, int h, int w, int c, double t) {
+  
+  DImage flowFormatted, destFormatted;
+  DImage ImFormatted1, ImFormatted2;
+  DImage forwardFormatted, backwardFormatted;
+
+  // format input in the format needed by backend
+  destFormatted.allocate(w, h, 3);
+  flowFormatted.allocate(w, h, 2);
+  ImFormatted1.allocate(w, h, c);
+  ImFormatted2.allocate(w, h, c);
+  forwardFormatted.allocate(w, h, 2);
+  backwardFormatted.allocate(w, h, 2);
+
+  memcpy(destFormatted.pData, dest, h * w * 3 * sizeof(double));
+  memcpy(flowFormatted.pData, flow, h * w * 2 * sizeof(double));
+  memcpy(ImFormatted1.pData, Im1, h * w * c * sizeof(double));
+  memcpy(ImFormatted2.pData, Im2, h * w * c * sizeof(double));
+  memcpy(forwardFormatted.pData, forward, h * w * 2 * sizeof(double));
+  memcpy(backwardFormatted.pData, backward, h * w * 2 * sizeof(double));
+
+  destFormatted.setColorType(colType);
+  ImFormatted1.setColorType(colType);
+  ImFormatted2.setColorType(colType);
+
+  // call bidirection splat motions backend
+  FlowInterpolation::colorTransfer(destFormatted, flowFormatted,
+                                   ImFormatted1, ImFormatted2,
+                                   forwardFormatted, backwardFormatted, t);
+//
+//  // copy formatted output to a contiguous memory to be returned
+  memcpy(dest, destFormatted.pData, h * w * 2 * sizeof(double));
+
+  // clear c memory
+  destFormatted.clear();
+  flowFormatted.clear();
+  ImFormatted1.clear();
+  ImFormatted2.clear();
+  forwardFormatted.clear();
+  backwardFormatted.clear();
 
   return;
 }

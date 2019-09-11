@@ -13,8 +13,15 @@ extern void Coarse2FineFlowWrapper(double * vx, double * vy, double * warpI2,
                               int h, int w, int c);
 
 
-extern void FlowInterpolationWrapper(double *vx, double *vy,
+extern void SplatMotionsWrapper(double *vx, double *vy,
                                 const double *vxForward, const double *vyForward,
                                 const double *vxBackward, const double *vyBackward,
                                 const double * Im1, const double * Im2,
                                 int colType, int h, int w, int c, double t);
+
+
+extern void ColorTransferWrapper(double *dest, const double *flow,
+                             const double *Im1, const double *Im2,
+                             const double *forward, const double *backward,
+                             int colType, int h, int w, int c, double t);
+

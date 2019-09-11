@@ -125,3 +125,61 @@ void FlowInterpolation::splatMotionsBidirect(DImage& vx, DImage& vy, const DImag
 //    kill_nans(splatty)
   
 }
+
+
+void FlowInterpolation::colorTransfer(DImage& dest, const DImage& interp, const DImage& Im1, const DImage& Im2, const DImage& forward, const DImage& backward, double t) {
+
+    const double *pInterp = interp.data();
+    double *pDest = dest.data();
+    const int nRows = dest.height();
+    const int nCols = dest.width();
+    const int nChannels = dest.nchannels();
+    double ux, uy, xp1, yp1, xp2, yp2;
+    int xi1, yi1, xi2, yi2;
+
+    for (int row=0; row!=nRows; ++row) {
+      for (int col=0; col!=nCols; ++col) {
+        ux = *pInterp;
+        uy = *(pInterp+1);
+        xp1 = col - t * ux + 0.5;
+        yp1 = row - t * uy + 0.5;
+        xp2 = ux + xp2;
+        yp2 = uy + yp2;
+        xi1 = static_cast<int>(xp1);
+        yi1 = static_cast<int>(yp1);
+        xi2 = static_cast<int>(xp2);
+        yi2 = static_cast<int>(yp2);
+        if (checkIndices(nRows, nCols, xi1, yi1) &&
+            checkIndices(nRows, nCols, xi2, yi2)) {
+          int offset1 = (yi1 * nCols + xi1) << 1;
+          int offset2 = (yi2 * nCols + xi2) << 1;
+          double fx = forward[offset1];
+          double fy = forward[offset1+1];
+          double bx = -backward[offset2];
+          double by = -backward[offset2+1];
+          double d1 = flowDistance(fx, fy, ux, uy);
+          double d2 = flowDistance(bx, by, ux, uy);
+          double diff = abs(d1 - d2);
+          if (diff < 0.1) {
+            pDest[0] = (Im1[offset1] + Im2[offset2]) * 0.5;
+            pDest[1] = (Im1[offset1+1] + Im2[offset2+1]) * 0.5;
+            pDest[2] = (Im1[offset1+2] + Im2[offset2+2]) * 0.5;
+          } else if (d1 > d2) {
+            pDest[0] = Im2[offset2];
+            pDest[1] = Im2[offset2+1];
+            pDest[2] = Im2[offset2+2];
+          } else {
+            pDest[0] = Im1[offset1];
+            pDest[1] = Im1[offset1+1];
+            pDest[2] = Im1[offset1+2];
+          }
+          std::cout << row << " " << col << " " << diff << std::endl;
+          std::cout << pDest[0] << " " << pDest[1] << " " << pDest[2] << std::endl;
+          std::cin.get();
+        }
+        pInterp += 2;
+        pDest += 3;
+      }
+    }
+    return;
+}
