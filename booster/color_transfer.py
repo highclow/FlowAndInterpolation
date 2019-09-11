@@ -151,13 +151,15 @@ def masked_transfer_color(f0, f1, forward, backward, interp, t=0.5):
             d0 = pix.flowdist(fvec, u)
             d1 = pix.flowdist(bvec, u)
             diff = abs(d0-d1)
-
             if diff < 0.1:
                 dest[row][col] = (f0[yi0][xi0] + f1[yi1][xi1]) * 0.5
             elif d0 > d1:
                 dest[row][col] = f1[yi1][xi1]
             else:
                 dest[row][col] = f0[yi0][xi0]
+            print(row, col, d0, d1, diff, dest[row][col])
+            import pdb; pdb.set_trace()
+            
     return dest
             
     

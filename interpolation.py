@@ -45,14 +45,14 @@ def interpolation(im1, im2, ts):
     backward = np.concatenate((uBackward[..., None], vBackward[..., None]), axis=2)
     pix.fill_holes(flow)
     pix.fill_holes(flow)
-    pix.kill_nans(flow)
+    pix.kill_infs(flow)
     flow = cv2.GaussianBlur(flow, (11, 11), 10)
-    interp = ct.masked_transfer_color(im1,
-                                      im2,
-                                      forward,
-                                      backward,
-                                      flow,
-                                      t)
+    interp = pyflow.color_transfer(im1,
+                                   im2,
+                                   forward,
+                                   backward,
+                                   flow,
+                                   t)
     interpolated.append(interp)
   e = time.time()
   print('Time Taken: %.2f seconds for image of size (%d, %d, %d)' % (

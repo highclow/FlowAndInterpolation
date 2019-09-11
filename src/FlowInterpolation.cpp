@@ -131,9 +131,9 @@ void FlowInterpolation::colorTransfer(DImage& dest, const DImage& interp, const 
 
     const double *pInterp = interp.data();
     double *pDest = dest.data();
-    const int nRows = dest.height();
-    const int nCols = dest.width();
-    const int nChannels = dest.nchannels();
+    const int nRows = Im1.height();
+    const int nCols = Im1.width();
+    const int nChannels = Im1.nchannels();
     double ux, uy, xp1, yp1, xp2, yp2;
     int xi1, yi1, xi2, yi2;
 
@@ -143,16 +143,18 @@ void FlowInterpolation::colorTransfer(DImage& dest, const DImage& interp, const 
         uy = *(pInterp+1);
         xp1 = col - t * ux + 0.5;
         yp1 = row - t * uy + 0.5;
-        xp2 = ux + xp2;
-        yp2 = uy + yp2;
+        xp2 = ux + xp1;
+        yp2 = uy + yp1;
         xi1 = static_cast<int>(xp1);
         yi1 = static_cast<int>(yp1);
         xi2 = static_cast<int>(xp2);
         yi2 = static_cast<int>(yp2);
         if (checkIndices(nRows, nCols, xi1, yi1) &&
             checkIndices(nRows, nCols, xi2, yi2)) {
-          int offset1 = (yi1 * nCols + xi1) << 1;
-          int offset2 = (yi2 * nCols + xi2) << 1;
+          int paddr1 = yi1 * nCols + xi1;
+          int paddr2 = yi2 * nCols + xi2;
+          int offset1 = paddr1 << 1;
+          int offset2 = paddr2 << 1;
           double fx = forward[offset1];
           double fy = forward[offset1+1];
           double bx = -backward[offset2];
@@ -160,6 +162,8 @@ void FlowInterpolation::colorTransfer(DImage& dest, const DImage& interp, const 
           double d1 = flowDistance(fx, fy, ux, uy);
           double d2 = flowDistance(bx, by, ux, uy);
           double diff = abs(d1 - d2);
+          offset1 = paddr1 * 3;
+          offset2 = paddr2 * 3;
           if (diff < 0.1) {
             pDest[0] = (Im1[offset1] + Im2[offset2]) * 0.5;
             pDest[1] = (Im1[offset1+1] + Im2[offset2+1]) * 0.5;
@@ -173,9 +177,6 @@ void FlowInterpolation::colorTransfer(DImage& dest, const DImage& interp, const 
             pDest[1] = Im1[offset1+1];
             pDest[2] = Im1[offset1+2];
           }
-          std::cout << row << " " << col << " " << diff << std::endl;
-          std::cout << pDest[0] << " " << pDest[1] << " " << pDest[2] << std::endl;
-          std::cin.get();
         }
         pInterp += 2;
         pDest += 3;

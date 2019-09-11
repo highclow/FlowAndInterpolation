@@ -141,7 +141,7 @@ void ColorTransferWrapper(double *dest, const double *flow,
                                    forwardFormatted, backwardFormatted, t);
 //
 //  // copy formatted output to a contiguous memory to be returned
-  memcpy(dest, destFormatted.pData, h * w * 2 * sizeof(double));
+  memcpy(dest, destFormatted.pData, h * w * 3 * sizeof(double));
 
   // clear c memory
   destFormatted.clear();
