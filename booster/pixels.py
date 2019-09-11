@@ -54,10 +54,10 @@ def follow_intensity(frame0, frame1, u,
     xp0 = col - t*u[0] + 0.5
     yp0 = row - t*u[1] + 0.5
     xp1 = u[0] + xp0
-    yp1 = u[1] + xp1
+    yp1 = u[1] + yp0
 
     xi0 = int(xp0)
-    yi0 = int(yp1)
+    yi0 = int(yp0)
     xi1 = int(xp1)
     yi1 = int(yp1)
     if (check_indices(frame0, xi0, yi0) and

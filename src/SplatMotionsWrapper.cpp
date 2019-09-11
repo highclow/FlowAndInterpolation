@@ -41,6 +41,9 @@ void SplatMotionsWrapper(double *vx, double *vy,
   ImFormatted1.setColorType(colType);
   ImFormatted2.setColorType(colType);
 
+  vxFormatted.allocate(w, h, 1);
+  vyFormatted.allocate(w, h, 1);
+
   // call bidirection splat motions backend
   SplatMotions::splatMotionsBidirect(vxFormatted, vyFormatted,
                                      vxForwardFormatted, vyForwardFormatted,

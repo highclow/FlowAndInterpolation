@@ -24,9 +24,8 @@ nInnerFPIterations = 1
 nSORIterations = 30
 colType = 0  # 0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))
 # Interpolate rate
-t = 0.7 #
 
-def interpolation(im1, im2):
+def interpolation(im1, im2, ts):
   s = time.time()
   uForward, vForward, im2WForward = pyflow.coarse2fine_flow(im1, im2,
           alpha, ratio, minWidth, nOuterFPIterations, nInnerFPIterations,
@@ -34,29 +33,28 @@ def interpolation(im1, im2):
   uBackward, vBackward, im2WBackward = pyflow.coarse2fine_flow(im2, im1,
           alpha, ratio, minWidth, nOuterFPIterations, nInnerFPIterations,
           nSORIterations, colType)
-  forward = np.concatenate((uForward[..., None], vForward[..., None]), axis=2)
-  backward = np.concatenate((uBackward[..., None], vBackward[..., None]), axis=2)
   e = time.time()
   print('Time Taken: %.2f seconds for image of size (%d, %d, %d)' % (
           e - s, im1.shape[0], im1.shape[1], im1.shape[2]))
   s = time.time()
-#  forward = np.load('./forward.npy')
-#  backward = np.load('./backward.npy')
-  flow = pix.splat_motions_bidi(forward, backward,
+  interpolated = []
+  for t in ts:
+    flow = pyflow.splat_motions(uForward, vForward, uBackward, vBackward,
                                 im1, im2, t)
-#  uForward = forward[:,:,0].copy(order='C')
-#  vForward = forward[:,:,1].copy(order='C')
-#  uBackward = backward[:,:,0].copy(order='C')
-#  vBackward = backward[:,:,1].copy(order='C')
-#  flow2 = pyflow.splat_motions(uForward, vForward, uBackward, vBackward,
-#                               im1, im2, t)
-  flow = cv2.GaussianBlur(flow, (11, 11), 10)
-  interpolated = ct.masked_transfer_color(im1,
-                                          im2,
-                                          forward,
-                                          backward,
-                                          flow,
-                                          t)
+    flow = np.concatenate((flow[0][..., None], flow[1][..., None]), axis=2)
+    forward = np.concatenate((uForward[..., None], vForward[..., None]), axis=2)
+    backward = np.concatenate((uBackward[..., None], vBackward[..., None]), axis=2)
+    pix.fill_holes(flow)
+    pix.fill_holes(flow)
+    pix.kill_nans(flow)
+    flow = cv2.GaussianBlur(flow, (11, 11), 10)
+    interp = ct.masked_transfer_color(im1,
+                                      im2,
+                                      forward,
+                                      backward,
+                                      flow,
+                                      t)
+    interpolated.append(interp)
   e = time.time()
   print('Time Taken: %.2f seconds for image of size (%d, %d, %d)' % (
           e - s, im1.shape[0], im1.shape[1], im1.shape[2]))
@@ -67,5 +65,7 @@ if __name__ == '__main__':
   im2 = cv2.imread('examples/w1SyWlV9444_00139_s000-00411.jpg')
   im1 = im1.astype(float) / 255.
   im2 = im2.astype(float) / 255.
-  interpolated = interpolation(im1, im2)
-  cv2.imwrite('examples/interpolated.jpg', (interpolated * 255).astype(int))
+  ts = np.arange(0.0, 1.0, 0.1)
+  interpolated = interpolation(im1, im2, ts)
+  for k, interp in zip(ts,interpolated):
+    cv2.imwrite('examples/interpolated_%02d.jpg'%(int(10*k)), (interp * 255).astype(int))
