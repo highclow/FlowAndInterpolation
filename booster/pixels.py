@@ -155,7 +155,8 @@ def kill_infs(f):
             
 def fill_holes(splatty):
     """ Fill NaN holes in splatty by averaging neightbors. """
-    indices = filter_not_nans(splatty)
+    #indices = filter_not_nans(splatty)
+    indices = filter_not_infs(splatty)
     indices.sort(key=lambda x: num_nan_neighbors(splatty, x[0], x[1]))
     for i in tqdm(indices, position=True, desc="filling holes"): 
         average_fill(splatty, i)
@@ -172,7 +173,8 @@ def average_fill(f, indices):
             c = indices[1] + j
             if check_indices(f, c, r):
                 pixel = f[r][c]
-                if not np.isnan(pixel[0]) and not np.isnan(pixel[1]):
+                #if not np.isnan(pixel[0]) and not np.isnan(pixel[1]):
+                if not np.isinf(pixel[0]) and not np.isinf(pixel[1]):
                     n += 1
                     u += pixel[0]
                     v += pixel[1]
@@ -208,6 +210,20 @@ def filter_not_nans(f):
         for c in range(w):
           pixel = f[r][c]
           if np.isnan(pixel[0]) or np.isnan(pixel[1]):
+            no_nans.append((r,c))
+    return no_nans
+
+
+def filter_not_infs(f):
+    """ Return a new list of indices, containing
+    only pixels that are not nan in f. """
+    h = f.shape[0]
+    w = f.shape[1]
+    no_nans = []
+    for r in range(h):
+        for c in range(w):
+          pixel = f[r][c]
+          if np.isinf(pixel[0]) or np.isinf(pixel[1]):
             no_nans.append((r,c))
     return no_nans
 
