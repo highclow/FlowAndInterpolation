@@ -48,6 +48,7 @@ def interpolation(im1, im2, ts):
     pix.fill_holes(flow)
     pix.kill_infs(flow)
     flow = cv2.GaussianBlur(flow, (11, 11), 10)
+    flow = flow.astype('float64')
     interp = pyflow.color_transfer(im1,
                                    im2,
                                    forward,
