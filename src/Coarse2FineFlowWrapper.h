@@ -11,3 +11,10 @@ extern void Coarse2FineFlowWrapper(double * vx, double * vy, double * warpI2,
                               int nOuterFPIterations, int nInnerFPIterations,
                               int nSORIterations, int colType,
                               int h, int w, int c);
+
+
+extern void FlowInterpolationWrapper(double *vx, double *vy,
+                                const double *vxForward, const double *vyForward,
+                                const double *vxBackward, const double *vyBackward,
+                                const double * Im1, const double * Im2,
+                                int colType, int h, int w, int c, double t);

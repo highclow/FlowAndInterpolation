@@ -1,9 +1,9 @@
 #include <limits>
-#include "SplatMotions.h"
 #include "Matrix.h"
+#include "FlowInterpolation.h"
 
 
-void SplatMotions::fillHoles(DImage& vx, DImage& vy) {
+void FlowInterpolation::fillHoles(DImage& vx, DImage& vy) {
     const double *pvx = vx.data();
     const double *pvy = vy.data();
     const int nPixels = vx.npixels();
@@ -20,7 +20,7 @@ void SplatMotions::fillHoles(DImage& vx, DImage& vy) {
     }
 }
 
-void SplatMotions::splatForward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxForward, const DImage& vyForward, const DImage& Im1, const DImage& Im2, double  t){
+void FlowInterpolation::splatForward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxForward, const DImage& vyForward, const DImage& Im1, const DImage& Im2, double  t){
     
     const int nRows = vxForward.height();
     const int nCols = vxForward.width();
@@ -64,7 +64,7 @@ void SplatMotions::splatForward(DImage& vx, DImage& vy, DImage &pts, const DImag
 }
 
 
-void SplatMotions::splatBackward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, double  t){
+void FlowInterpolation::splatBackward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, double  t){
 
     const int nRows = vxBackward.height();
     const int nCols = vxBackward.width();
@@ -109,7 +109,7 @@ void SplatMotions::splatBackward(DImage& vx, DImage& vy, DImage &pts, const DIma
     
 
 
-void SplatMotions::splatMotionsBidirect(DImage& vx, DImage& vy, const DImage& vxForward, const DImage& vyForward, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, double t){
+void FlowInterpolation::splatMotionsBidirect(DImage& vx, DImage& vy, const DImage& vxForward, const DImage& vyForward, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, double t){
 
     const int nRows = vxForward.height();
     const int nCols = vxForward.width();

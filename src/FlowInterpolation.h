@@ -1,11 +1,11 @@
-#ifndef __SPLATMOTIONS_H__
-#define __SPLATMOTIONS_H__
+#ifndef __FLOW_INTERPOLATION_H__
+#define __FLOW_INTERPOLATION_H__
 
 #include "Image.h"
 
 typedef double _FlowPrecision;
 
-class SplatMotions
+class FlowInterpolation
 {
 public:
     static void splatMotionsBidirect(DImage& vx, DImage& vy, const DImage& vxForward, const DImage& vyForward, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, double t);
@@ -72,4 +72,4 @@ public:
 
 
 
-#endif // __SPLATMOTIONS_H__
+#endif // __FLOW_INTERPOLATION_H__

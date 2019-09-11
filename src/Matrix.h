@@ -10,6 +10,7 @@
     #include <QFile>
 #endif
 #include <iostream>
+#include <cstring>
 
 using namespace std;
 
