@@ -43,6 +43,7 @@ def interpolation(im1, im2, ts):
     flow = np.concatenate((flow[0][..., None], flow[1][..., None]), axis=2)
     forward = np.concatenate((uForward[..., None], vForward[..., None]), axis=2)
     backward = np.concatenate((uBackward[..., None], vBackward[..., None]), axis=2)
+    flow = flow.astype('float32')
     pix.fill_holes(flow)
     pix.fill_holes(flow)
     pix.kill_infs(flow)
