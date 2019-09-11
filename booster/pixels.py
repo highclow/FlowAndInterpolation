@@ -142,6 +142,15 @@ def kill_nans(f):
         for c in range(w):
             if np.isnan(f[r][c][0]) or np.isnan(f[r][c][1]):
                 f[r][c] = np.array([0.0, 0.0], dtype='float')
+
+def kill_inf(f):
+    """ Replaces all nans in the frame with [0,0] """
+    h = f.shape[0]
+    w = f.shape[1]
+    for r in range(h):
+        for c in range(w):
+            if np.isinf(f[r][c][0]) or np.isinf(f[r][c][1]):
+                f[r][c] = np.array([0.0, 0.0], dtype='float')
     
             
 def fill_holes(splatty):
