@@ -45,7 +45,7 @@ public:
       return 0 <= y and y < h and 0 <= x and x < w;
     }
 
-    static inline double squareDistance(const double *p1, const double *p2, int len) {
+    static inline double squareDistance(const double *&p1, const double *&p2, int len) {
       double sum = 0;
       double diff;
       for (int i=0; i!=len; ++i){
