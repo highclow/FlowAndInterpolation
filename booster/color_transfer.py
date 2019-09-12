@@ -157,8 +157,6 @@ def masked_transfer_color(f0, f1, forward, backward, interp, t=0.5):
                 dest[row][col] = f1[yi1][xi1]
             else:
                 dest[row][col] = f0[yi0][xi0]
-            print(row, col, d0, d1, diff, dest[row][col])
-            import pdb; pdb.set_trace()
             
     return dest
             

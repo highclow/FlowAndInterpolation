@@ -3,20 +3,59 @@
 #include "FlowInterpolation.h"
 
 
-void FlowInterpolation::fillHoles(DImage& vx, DImage& vy) {
+void FlowInterpolation::killMaxLimits(DImage& vx, DImage& vy) {
     const double *pvx = vx.data();
     const double *pvy = vy.data();
     const int nPixels = vx.npixels();
-    std::vector<int> indices(nPixels); 
-    std::vector<double> sum(nPixels);
-    std::vector<int> count(nPixels);
-    int cnt = 0;
-    for (int i=0; i != nPixels; ++i) {
-      if (pvx[i] == std::numeric_limits<double>::max() || 
-          pvy[i] == std::numeric_limits<double>::max()) {
-        indices[cnt] = i;
-//        for (int m1=-1; m1!=2; ++y)
+    for (int i=0; i!=nPixels; ++i) {
+      if (*pvx == std::numeric_limits<double>::max() ||
+          *pvy == std::numeric_limits<double>::max()) {
+        vx[i] = 0.0;
+        vy[i] = 0.0;
       }
+      ++pvx;
+      ++pvy;
+    }
+}
+
+void FlowInterpolation::fillHoles(DImage& vx, DImage& vy) {
+    const double *pvx = vx.data();
+    const double *pvy = vy.data();
+    const int nRows = vx.height();
+    const int nCols = vx.width();
+    const int nPixels = nRows * nCols;
+    std::vector<int> indices(nPixels); 
+    std::vector<double> sumx(nPixels, 0.0);
+    std::vector<double> sumy(nPixels, 0.0);
+    std::vector<int> count(nPixels, 0);
+    int neighbors[8] = {-nCols-1, -nCols, -nCols+1, -1, 1, nCols-1, nCols, nCols+1};
+    int cnt = 0;
+    for (int row=0; row!=nRows; ++row) {
+      for (int col=0; col != nCols; ++col) {
+        if (*pvx == std::numeric_limits<double>::max() || 
+            *pvy == std::numeric_limits<double>::max()) {
+          indices[cnt] = row * nCols + col;
+          for (int k=0; k!=8; ++k) {
+            if (insideBoundary(nRows, nCols, row, col, neighbors[k])) {
+              int offset = indices[cnt] + neighbors[k];
+              if (vx[offset] != std::numeric_limits<double>::max() ||
+                  vy[offset] != std::numeric_limits<double>::max()) {
+                sumx[cnt] += vx[offset];
+                sumy[cnt] += vy[offset];
+                count[cnt] += 1;
+              }
+            }
+          }
+          ++cnt;
+        }
+        ++pvx;
+        ++pvy;
+      }
+    }
+    for (int i=0; i!=cnt; ++i) {
+      int idx = indices[i];
+      vx[idx] = sumx[i] / count[i];
+      vy[idx] = sumy[i] / count[i];
     }
 }
 
@@ -33,12 +72,12 @@ void FlowInterpolation::splatForward(DImage& vx, DImage& vy, DImage &pts, const 
 
     double ux, uy, xp, yp;
     std::vector<int> pixels(8);
-    for (int i=0; i != nRows; ++i) {
-      for (int j=0; j != nCols; ++j) {
+    for (int row=0; row!=nRows; ++row) {
+      for (int col=0; col != nCols; ++col) {
         ux = *pvxForward;
         uy = *pvyForward; 
-        xp = j + t * ux;
-        yp = i + t * uy;
+        xp = col + t * ux;
+        yp = row + t * uy;
         splat(pixels, xp, yp);
 
         for (int k=0; k != 4; ++k) {
@@ -77,12 +116,12 @@ void FlowInterpolation::splatBackward(DImage& vx, DImage& vy, DImage &pts, const
 
     double ux, uy, xp, yp;
     std::vector<int> pixels(8);
-    for (int i=0; i != nRows; ++i) {
-      for (int j=0; j != nCols; ++j) {
+    for (int row=0; row!=nRows; ++row) {
+      for (int col=0; col != nCols; ++col) {
         ux = *pvxBackward;
         uy = *pvyBackward;
-        xp = j + (1-t) * ux;
-        yp = i + (1-t) * uy;
+        xp = col + (1-t) * ux;
+        yp = row + (1-t) * uy;
         splat(pixels, xp, yp);
 
         for (int k=0; k != 4; ++k) {
@@ -117,13 +156,9 @@ void FlowInterpolation::splatMotionsBidirect(DImage& vx, DImage& vy, const DImag
     pts.setValue(5.0, nRows, nCols, 1);
     splatForward(vx, vy, pts, vxForward, vyForward, Im1, Im2, t);
     splatBackward(vx, vy, pts, vxBackward, vyBackward, Im1, Im2, t);
-    
-
-//    # Fill holes twice to get rid of big holes
-//    fill_holes(splatty)
-//    fill_holes(splatty)
-//    kill_nans(splatty)
-  
+//    fillHoles(vx, vy);
+//    fillHoles(vx, vy);
+    killMaxLimits(vx, vy);
 }
 
 
@@ -137,6 +172,12 @@ void FlowInterpolation::colorTransfer(DImage& dest, const DImage& interp, const 
     double ux, uy, xp1, yp1, xp2, yp2;
     int xi1, yi1, xi2, yi2;
 
+    if ( t > 0.5 ){
+      dest.copyData(Im2);
+    } else {
+      dest.copyData(Im1);
+    }
+    dest.copyData(Im1);
     for (int row=0; row!=nRows; ++row) {
       for (int col=0; col!=nCols; ++col) {
         ux = *pInterp;

@@ -151,6 +151,15 @@ def kill_infs(f):
         for c in range(w):
             if np.isinf(f[r][c][0]) or np.isinf(f[r][c][1]):
                 f[r][c] = np.array([0.0, 0.0], dtype='float')
+
+def kill_maxs(f):
+    """ Replaces all nans in the frame with [0,0] """
+    h = f.shape[0]
+    w = f.shape[1]
+    for r in range(h):
+        for c in range(w):
+            if f[r][c][0] == np.finfo(np.float64).max or f[r][c][1] == np.finfo(np.float64).max:
+                f[r][c] = np.array([0.0, 0.0], dtype='double')
     
             
 def fill_holes(splatty):
@@ -174,7 +183,8 @@ def average_fill(f, indices):
             if check_indices(f, c, r):
                 pixel = f[r][c]
                 #if not np.isnan(pixel[0]) and not np.isnan(pixel[1]):
-                if not np.isinf(pixel[0]) and not np.isinf(pixel[1]):
+                #if not np.isinf(pixel[0]) and not np.isinf(pixel[1]):
+                if pixel[0] != np.finfo(np.float64).max or pixel[1] != np.finfo(np.float64).max:
                     n += 1
                     u += pixel[0]
                     v += pixel[1]
@@ -223,7 +233,8 @@ def filter_not_infs(f):
     for r in range(h):
         for c in range(w):
           pixel = f[r][c]
-          if np.isinf(pixel[0]) or np.isinf(pixel[1]):
+          if pixel[0] == np.finfo(np.float64).max or pixel[1] == np.finfo(np.float64).max:
+          #if np.isinf(pixel[0]) or np.isinf(pixel[1]):
             no_nans.append((r,c))
     return no_nans
 

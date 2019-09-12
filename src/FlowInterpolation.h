@@ -12,6 +12,7 @@ public:
     static void splatForward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxForward, const DImage& vyForward, const DImage& Im1, const DImage& Im2, double t);
     static void splatBackward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, double t);
     static void fillHoles(DImage& vx, DImage& vy);
+    static void killMaxLimits(DImage& vx, DImage& vy);
     static void colorTransfer(DImage& dest, const DImage& interp, const DImage& Im1, const DImage& Im2, const DImage& forward, const DImage& backward, double t);
 
 
@@ -30,6 +31,14 @@ public:
         } else {
             pixels[5] = pixels[7] = cy - 1;
         }
+    }
+
+    static inline bool insideBoundary(int h, int w, int row, int col, int neighbor) {
+       if ((row == 0 && neighbor < -1) || (row == h-1 && neighbor > 1) || 
+          (col == 0 && neighbor % w == -1) || (col == w-1 && neighbor % w == 1)) {
+         return false;
+       }
+       return true;
     }
 
     static inline bool checkIndices(int h, int w, int x, int y) {
