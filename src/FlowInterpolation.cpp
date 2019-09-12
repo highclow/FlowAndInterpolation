@@ -156,8 +156,8 @@ void FlowInterpolation::splatMotionsBidirect(DImage& vx, DImage& vy, const DImag
     pts.setValue(5.0, nRows, nCols, 1);
     splatForward(vx, vy, pts, vxForward, vyForward, Im1, Im2, t);
     splatBackward(vx, vy, pts, vxBackward, vyBackward, Im1, Im2, t);
-//    fillHoles(vx, vy);
-//    fillHoles(vx, vy);
+    fillHoles(vx, vy);
+    fillHoles(vx, vy);
     killMaxLimits(vx, vy);
 }
 
