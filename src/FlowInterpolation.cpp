@@ -1,62 +1,74 @@
+#include <algorithm>
 #include <limits>
 #include "Matrix.h"
 #include "FlowInterpolation.h"
 
 
-void FlowInterpolation::killMaxLimits(DImage& vx, DImage& vy) {
+std::ostream& operator<<(std::ostream& os, const std::vector<int> &input)
+{
+	for (auto const& i: input) {
+		os << i << " ";
+	}
+	return os;
+}
+
+
+
+void FlowInterpolation::killMaxLimits(std::vector<int>& holes, DImage& vx, DImage& vy) {
+    for (int i=0; i!=holes.size(); ++i) {
+      vx[i] = 0.0;
+      vy[i] = 0.0;
+    }
+}
+
+
+void FlowInterpolation::findHoles(std::vector<int>& holes, DImage& vx, DImage& vy) {
     const double *pvx = vx.data();
     const double *pvy = vy.data();
     const int nPixels = vx.npixels();
-    for (int i=0; i!=nPixels; ++i) {
-      if (*pvx == std::numeric_limits<double>::max() ||
+    for (int k=0; k!=nPixels; ++k) {
+      if (*pvx == std::numeric_limits<double>::max() || 
           *pvy == std::numeric_limits<double>::max()) {
-        vx[i] = 0.0;
-        vy[i] = 0.0;
+        holes.push_back(k);
       }
       ++pvx;
       ++pvy;
     }
 }
 
-void FlowInterpolation::fillHoles(DImage& vx, DImage& vy) {
-    const double *pvx = vx.data();
-    const double *pvy = vy.data();
+
+void FlowInterpolation::fillHoles(std::vector<int>& holes, DImage& vx, DImage& vy) {
     const int nRows = vx.height();
     const int nCols = vx.width();
-    const int nPixels = nRows * nCols;
-    std::vector<int> indices(nPixels); 
-    std::vector<double> sumx(nPixels, 0.0);
-    std::vector<double> sumy(nPixels, 0.0);
-    std::vector<int> count(nPixels, 0);
+    const int size = holes.size();
     int neighbors[8] = {-nCols-1, -nCols, -nCols+1, -1, 1, nCols-1, nCols, nCols+1};
-    int cnt = 0;
-    for (int row=0; row!=nRows; ++row) {
-      for (int col=0; col != nCols; ++col) {
-        if (*pvx == std::numeric_limits<double>::max() || 
-            *pvy == std::numeric_limits<double>::max()) {
-          indices[cnt] = row * nCols + col;
-          for (int k=0; k!=8; ++k) {
-            if (insideBoundary(nRows, nCols, row, col, neighbors[k])) {
-              int offset = indices[cnt] + neighbors[k];
-              if (vx[offset] != std::numeric_limits<double>::max() ||
-                  vy[offset] != std::numeric_limits<double>::max()) {
-                sumx[cnt] += vx[offset];
-                sumy[cnt] += vy[offset];
-                count[cnt] += 1;
-              }
-            }
+    for (int i=0; i!=size; ++i) {
+      int ind = holes[i];
+      int row = ind / nCols;
+      int col = ind - row * nCols;
+      double sumx = 0.0;
+      double sumy = 0.0;
+      int cnt = 0;
+      for (int k=0; k!=8; ++k) {
+        if (insideBoundary(nRows, nCols, row, col, neighbors[k])) {
+          int offset = ind + neighbors[k];
+          if (vx[offset] != std::numeric_limits<double>::max() ||
+              vy[offset] != std::numeric_limits<double>::max()) {
+            sumx += vx[offset];
+            sumy += vy[offset];
+            cnt += 1;
           }
-          ++cnt;
         }
-        ++pvx;
-        ++pvy;
+      }
+      if (cnt > 0) {
+        vx[ind] = sumx / cnt;
+        vy[ind] = sumy / cnt;
+        holes[i] = -1;
       }
     }
-    for (int i=0; i!=cnt; ++i) {
-      int idx = indices[i];
-      vx[idx] = sumx[i] / count[i];
-      vy[idx] = sumy[i] / count[i];
-    }
+    holes.erase(std::remove_if(holes.begin(), holes.end(),[](const int& x) { 
+        return x < 0;
+    }), holes.end());
 }
 
 void FlowInterpolation::splatForward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxForward, const DImage& vyForward, const DImage& Im1, const DImage& Im2, double  t){
@@ -156,9 +168,11 @@ void FlowInterpolation::splatMotionsBidirect(DImage& vx, DImage& vy, const DImag
     pts.setValue(5.0, nRows, nCols, 1);
     splatForward(vx, vy, pts, vxForward, vyForward, Im1, Im2, t);
     splatBackward(vx, vy, pts, vxBackward, vyBackward, Im1, Im2, t);
-    fillHoles(vx, vy);
-    fillHoles(vx, vy);
-    killMaxLimits(vx, vy);
+    std::vector<int> holes;
+    findHoles(holes, vx, vy);
+    fillHoles(holes, vx, vy);
+    fillHoles(holes, vx, vy);
+    killMaxLimits(holes, vx, vy);
 }
 
 

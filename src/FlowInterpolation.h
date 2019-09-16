@@ -11,8 +11,9 @@ public:
     static void splatMotionsBidirect(DImage& vx, DImage& vy, const DImage& vxForward, const DImage& vyForward, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, double t);
     static void splatForward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxForward, const DImage& vyForward, const DImage& Im1, const DImage& Im2, double t);
     static void splatBackward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, double t);
-    static void fillHoles(DImage& vx, DImage& vy);
-    static void killMaxLimits(DImage& vx, DImage& vy);
+    static void findHoles(std::vector<int>& holes, DImage& vx, DImage& vy);
+    static void fillHoles(std::vector<int>& holes, DImage& vx, DImage& vy);
+    static void killMaxLimits(std::vector<int>& holes, DImage& vx, DImage& vy);
     static void colorTransfer(DImage& dest, const DImage& interp, const DImage& Im1, const DImage& Im2, const DImage& forward, const DImage& backward, double t);
 
 
