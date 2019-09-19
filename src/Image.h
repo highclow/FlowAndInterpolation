@@ -957,36 +957,40 @@ template <class T>
 template <class T1>
 void Image<T>::dx(Image<T1>& result,bool IsAdvancedFilter) const
 {
-	if(matchDimension(result)==false)
-		result.allocate(imWidth,imHeight,nChannels);
-	result.reset();
-	result.setDerivative();
-	T1*& data=result.data();
-	int i,j,k,offset;
-	if(IsAdvancedFilter==false)
-		for(i=0;i<imHeight;i++)
-			for(j=0;j<imWidth-1;j++)
-			{
-				offset=i*imWidth+j;
-				for(k=0;k<nChannels;k++)
-					data[offset*nChannels+k]=(T1)pData[(offset+1)*nChannels+k]-pData[offset*nChannels+k];
-			}
-	else
-	{
-		double xFilter[5]={1,-8,0,8,-1};
-		for(i=0;i<5;i++)
-			xFilter[i]/=12;
-		ImageProcessing::hfiltering(pData,data,imWidth,imHeight,nChannels,xFilter,2);
-	}
+    if(matchDimension(result)==false)
+        result.allocate(imWidth,imHeight,nChannels);
+    result.reset();
+    result.setDerivative();
+    T1*& data=result.data();
+    int i,j,k,offset;
+    if(IsAdvancedFilter==false) {
+        for(i=0;i<imHeight;i++) {
+            offset = i * imWidth;
+            const T* pElement = this->data() + offset;
+            T* pResult = result.data() + offset;
+            for(j=0;j<imWidth-1;j++) {
+                for(k=0;k<nChannels;k++){
+                    *pResult = static_cast<T1>(*(pElement+nChannels) - *pElement);
+                    ++pResult;
+                    ++pElement;
+                }
+            }
+        }
+    } else {
+        double xFilter[5]={1,-8,0,8,-1};
+        for(i=0;i<5;i++)
+            xFilter[i]/=12;
+        ImageProcessing::hfiltering(pData,data,imWidth,imHeight,nChannels,xFilter,2);
+    }
 }
 
 template <class T>
 template <class T1>
 Image<T1> Image<T>::dx(bool IsAdvancedFilter) const
 {
-	Image<T1> result;
-	dx<T1>(result,IsAdvancedFilter);
-	return result;
+    Image<T1> result;
+    dx<T1>(result,IsAdvancedFilter);
+    return result;
 }
 
 //------------------------------------------------------------------------------------------
@@ -996,35 +1000,40 @@ template <class T>
 template <class T1>
 void Image<T>::dy(Image<T1>& result,bool IsAdvancedFilter) const
 {
-	if(matchDimension(result)==false)
-		result.allocate(imWidth,imHeight,nChannels);
-	result.setDerivative();
-	T1*& data=result.data();
-	int i,j,k,offset;
-	if(IsAdvancedFilter==false)
-		for(i=0;i<imHeight-1;i++)
-			for(j=0;j<imWidth;j++)
-			{
-				offset=i*imWidth+j;
-				for(k=0;k<nChannels;k++)
-					data[offset*nChannels+k]=(T1)pData[(offset+imWidth)*nChannels+k]-pData[offset*nChannels+k];
-			}
-	else
-	{
-		double yFilter[5]={1,-8,0,8,-1};
-		for(i=0;i<5;i++)
-			yFilter[i]/=12;
-		ImageProcessing::vfiltering(pData,data,imWidth,imHeight,nChannels,yFilter,2);
-	}
+    if(matchDimension(result)==false)
+        result.allocate(imWidth,imHeight,nChannels);
+    result.setDerivative();
+    T1*& data=result.data();
+    int i,j,k,offset;
+    if(IsAdvancedFilter==false) {
+        const T* pElement = this->data() + offset;
+        T* pResult = result.data() + offset;
+        int offset = nChannels*imWidth;
+        for(i=0;i<imHeight-1;i++) {
+            for(j=0;j<imWidth;j++) {
+                offset=i*imWidth+j;
+                for(k=0;k<nChannels;k++) {
+                    *pResult = static_cast<T1>(*(pElement+offset) - *pElement);
+                    ++pResult;
+                    ++pElement;
+                }
+            }
+        }
+    } else {
+        double yFilter[5]={1,-8,0,8,-1};
+        for(i=0;i<5;i++)
+            yFilter[i]/=12;
+        ImageProcessing::vfiltering(pData,data,imWidth,imHeight,nChannels,yFilter,2);
+    }
 }
 
 template <class T>
 template <class T1>
 Image<T1> Image<T>::dy(bool IsAdvancedFilter) const
 {
-	Image<T1> result;
-	dy<T1>(result,IsAdvancedFilter);
-	return result;
+    Image<T1> result;
+    dy<T1>(result,IsAdvancedFilter);
+    return result;
 }
 
 //------------------------------------------------------------------------------------------
@@ -1034,92 +1043,92 @@ template <class T>
 template <class T1>
 void Image<T>::dxx(Image<T1> &image) const
 {
-	if(!matchDimension(image))
-		image.allocate(imWidth,imHeight,nChannels);
-	T1* pDstData=image.data();
-	if(nChannels==1) // if there is only one image channel
-		for(int i=0;i<imHeight;i++)
-			for(int j=0;j<imWidth;j++)
-			{
-				int offset=i*imWidth+j;
-				if(j==0)
-				{
-					pDstData[offset]=pData[offset]-pData[offset+1];
-					continue;
-				}
-				if(j==imWidth-1)
-				{
-					pDstData[offset]=pData[offset]-pData[offset-1];
-					continue;
-				}
-				pDstData[offset]=pData[offset]*2-pData[offset-1]-pData[offset+1];
-			}
-	else
-		for(int i=0;i<imHeight;i++)
-			for(int j=0;j<imWidth;j++)
-			{
-				int offset=(i*imWidth+j)*nChannels;
-				if(j==0)
-				{
-					for(int k=0;k<nChannels;k++)
-						pDstData[offset+k]=pData[offset+k]-pData[offset+nChannels+k];
-					continue;
-				}
-				if(j==imWidth-1)
-				{
-					for(int k=0;k<nChannels;k++)
-						pDstData[offset+k]=pData[offset+k]-pData[offset-nChannels+k];
-					continue;
-				}
-				for(int k=0;k<nChannels;k++)
-					pDstData[offset+k]=pData[offset+k]*2-pData[offset+nChannels+k]-pData[offset-nChannels+k];
-			}
+    if(!matchDimension(image))
+        image.allocate(imWidth,imHeight,nChannels);
+    T1* pDstData=image.data();
+    if(nChannels==1) // if there is only one image channel
+        for(int i=0;i<imHeight;i++)
+            for(int j=0;j<imWidth;j++)
+            {
+                int offset=i*imWidth+j;
+                if(j==0)
+                {
+                    pDstData[offset]=pData[offset]-pData[offset+1];
+                    continue;
+                }
+                if(j==imWidth-1)
+                {
+                    pDstData[offset]=pData[offset]-pData[offset-1];
+                    continue;
+                }
+                pDstData[offset]=pData[offset]*2-pData[offset-1]-pData[offset+1];
+            }
+    else
+        for(int i=0;i<imHeight;i++)
+            for(int j=0;j<imWidth;j++)
+            {
+                int offset=(i*imWidth+j)*nChannels;
+                if(j==0)
+                {
+                    for(int k=0;k<nChannels;k++)
+                        pDstData[offset+k]=pData[offset+k]-pData[offset+nChannels+k];
+                    continue;
+                }
+                if(j==imWidth-1)
+                {
+                    for(int k=0;k<nChannels;k++)
+                        pDstData[offset+k]=pData[offset+k]-pData[offset-nChannels+k];
+                    continue;
+                }
+                for(int k=0;k<nChannels;k++)
+                    pDstData[offset+k]=pData[offset+k]*2-pData[offset+nChannels+k]-pData[offset-nChannels+k];
+            }
 }
 
 template <class T>
 template <class T1>
 void Image<T>::dyy(Image<T1>& image) const
 {
-	if(!matchDimension(image))
-		image.allocate(imWidth,imHeight,nChannels);
-	T1* pDstData=image.data();
-	if(nChannels==1)
-		for(int i=0;i<imHeight;i++)
-			for(int j=0;j<imWidth;j++)
-			{
-				int offset=i*imWidth+j;
-				if(i==0)
-				{
-					pDstData[offset]=pData[offset]-pData[offset+imWidth];
-					continue;
-				}
-				if(i==imHeight-1)
-				{
-					pDstData[offset]=pData[offset]-pData[offset-imWidth];
-					continue;
-				}
-				pDstData[offset]=pData[offset]*2-pData[offset+imWidth]-pData[offset-imWidth];
-			}
-	else
-		for(int i=0;i<imHeight;i++)
-			for(int j=0;j<imWidth;j++)
-			{
-				int offset=(i*imWidth+j)*nChannels;
-				if(i==0)
-				{
-					for(int k=0;k<nChannels;k++)
-						pDstData[offset+k]=pData[offset+k]-pData[offset+imWidth*nChannels+k];
-					continue;
-				}
-				if(i==imHeight-1)
-				{
-					for(int k=0;k<nChannels;k++)
-						pDstData[offset+k]=pData[offset+k]-pData[offset-imWidth*nChannels+k];
-					continue;
-				}
-				for(int k=0;k<nChannels;k++)
-					pDstData[offset+k]=pData[offset+k]*2-pData[offset+imWidth*nChannels+k]-pData[offset-imWidth*nChannels+k];
-			}
+    if(!matchDimension(image))
+        image.allocate(imWidth,imHeight,nChannels);
+    T1* pDstData=image.data();
+    if(nChannels==1)
+        for(int i=0;i<imHeight;i++)
+            for(int j=0;j<imWidth;j++)
+            {
+                int offset=i*imWidth+j;
+                if(i==0)
+                {
+                    pDstData[offset]=pData[offset]-pData[offset+imWidth];
+                    continue;
+                }
+                if(i==imHeight-1)
+                {
+                    pDstData[offset]=pData[offset]-pData[offset-imWidth];
+                    continue;
+                }
+                pDstData[offset]=pData[offset]*2-pData[offset+imWidth]-pData[offset-imWidth];
+            }
+    else
+        for(int i=0;i<imHeight;i++)
+            for(int j=0;j<imWidth;j++)
+            {
+                int offset=(i*imWidth+j)*nChannels;
+                if(i==0)
+                {
+                    for(int k=0;k<nChannels;k++)
+                        pDstData[offset+k]=pData[offset+k]-pData[offset+imWidth*nChannels+k];
+                    continue;
+                }
+                if(i==imHeight-1)
+                {
+                    for(int k=0;k<nChannels;k++)
+                        pDstData[offset+k]=pData[offset+k]-pData[offset-imWidth*nChannels+k];
+                    continue;
+                }
+                for(int k=0;k<nChannels;k++)
+                    pDstData[offset+k]=pData[offset+k]*2-pData[offset+imWidth*nChannels+k]-pData[offset-imWidth*nChannels+k];
+            }
 }
 
 //------------------------------------------------------------------------------------------
@@ -1181,24 +1190,24 @@ template <class T>
 template <class T1>
 void Image<T>::GaussianSmoothing(Image<T1>& image,double sigma,int fsize) const
 {
-	Image<T1> foo;
-	// constructing the 1D gaussian filter
-	double* gFilter;
-	gFilter=new double[fsize*2+1];
-	double sum=0;
-	sigma=sigma*sigma*2;
-	for(int i=-fsize;i<=fsize;i++)
-	{
-		gFilter[i+fsize]=exp(-(double)(i*i)/sigma);
-		sum+=gFilter[i+fsize];
-	}
-	for(int i=0;i<2*fsize+1;i++)
-		gFilter[i]/=sum;
+    Image<T1> foo;
+    // constructing the 1D gaussian filter
+    double* gFilter;
+    gFilter=new double[fsize*2+1];
+    double sum=0;
+    sigma=sigma*sigma*2;
+    for(int i=-fsize;i<=fsize;i++)
+    {
+        gFilter[i+fsize]=exp(-(double)(i*i)/sigma);
+        sum+=gFilter[i+fsize];
+    }
+    for(int i=0;i<2*fsize+1;i++)
+        gFilter[i]/=sum;
 
-	// apply filtering
-	imfilter_hv(image,gFilter,fsize,gFilter,fsize);
+    // apply filtering
+    imfilter_hv(image,gFilter,fsize,gFilter,fsize);
 
-	delete[] gFilter;
+    delete[] gFilter;
 }
 
 //------------------------------------------------------------------------------------------

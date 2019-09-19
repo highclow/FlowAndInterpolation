@@ -188,13 +188,13 @@ void OpticalFlow::genInImageMask(DImage &mask, const DImage &flow,int interval)
 //--------------------------------------------------------------------------------------------------------
 // function to compute optical flow field using two fixed point iterations
 // Input arguments:
-//     Im1, Im2:                        frame 1 and frame 2
-//    warpIm2:                        the warped frame 2 according to the current flow field u and v
-//    u,v:                                    the current flow field, NOTICE that they are also output arguments
+//    Im1, Im2:                      frame 1 and frame 2
+//    warpIm2:                       the warped frame 2 according to the current flow field u and v
+//    u,v:                           the current flow field, NOTICE that they are also output arguments
 //
 //--------------------------------------------------------------------------------------------------------
 void OpticalFlow::SmoothFlowSOR(const DImage &Im1, const DImage &Im2, DImage &warpIm2, DImage &u, DImage &v,
-                                                                    double alpha, int nOuterFPIterations, int nInnerFPIterations, int nSORIterations)
+                                double alpha, int nOuterFPIterations, int nInnerFPIterations, int nSORIterations)
 {
     DImage mask,imdx,imdy,imdt;
     int imWidth,imHeight,nChannels,nPixels;
@@ -335,7 +335,7 @@ void OpticalFlow::SmoothFlowSOR(const DImage &Im1, const DImage &Im2, DImage &wa
                             if(LapPara[k]<1E-20)
                                 continue;
                             //psiData[offset]=1/(2*sqrt(temp+varepsilon_psi)*LapPara[k]);
-                psiData[offset]=1/(2*sqrt(temp+varepsilon_psi));
+                            psiData[offset]=1/(2*sqrt(temp+varepsilon_psi));
                             break;
                         }
                     }
