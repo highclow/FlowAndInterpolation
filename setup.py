@@ -13,7 +13,12 @@ import numpy
 
 sourcefiles = ['pyflow.pyx', ]
 sourcefiles.extend(glob("src/*.cpp"))
-extensions = [Extension("pyflow", sourcefiles, include_dirs=[numpy.get_include()])]
+extensions = [
+        Extension("pyflow",
+            sourcefiles,
+            extra_compile_args=['-Wno-unused-function', '-std=c++11'],
+            language='C++',
+            include_dirs=[numpy.get_include()])]
 setup(
     name="pyflow",
     version="1.0",

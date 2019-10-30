@@ -27,7 +27,7 @@ void FlowInterpolation::findHoles(std::vector<int>& holes, DImage& vx, DImage& v
     const double *pvy = vy.data();
     const int nPixels = vx.npixels();
     for (int k=0; k!=nPixels; ++k) {
-      if (*pvx == std::numeric_limits<double>::max() || 
+      if (*pvx == std::numeric_limits<double>::max() ||
           *pvy == std::numeric_limits<double>::max()) {
         holes.push_back(k);
       }
@@ -66,13 +66,13 @@ void FlowInterpolation::fillHoles(std::vector<int>& holes, DImage& vx, DImage& v
         holes[i] = -1;
       }
     }
-    holes.erase(std::remove_if(holes.begin(), holes.end(),[](const int& x) { 
+    holes.erase(std::remove_if(holes.begin(), holes.end(), [](const int& x) {
         return x < 0;
     }), holes.end());
 }
 
 void FlowInterpolation::splatForward(DImage& vx, DImage& vy, DImage &pts, const DImage& vxForward, const DImage& vyForward, const DImage& Im1, const DImage& Im2, double  t){
-    
+
     const int nRows = vxForward.height();
     const int nCols = vxForward.width();
     const int nChannels = Im2.nchannels();
@@ -87,7 +87,7 @@ void FlowInterpolation::splatForward(DImage& vx, DImage& vy, DImage &pts, const 
     for (int row=0; row!=nRows; ++row) {
       for (int col=0; col != nCols; ++col) {
         ux = *pvxForward;
-        uy = *pvyForward; 
+        uy = *pvyForward;
         xp = col + t * ux;
         yp = row + t * uy;
         splat(pixels, xp, yp);
@@ -157,7 +157,7 @@ void FlowInterpolation::splatBackward(DImage& vx, DImage& vy, DImage &pts, const
       }
     }
 }
-    
+
 
 
 void FlowInterpolation::splatMotionsBidirect(DImage& vx, DImage& vy, const DImage& vxForward, const DImage& vyForward, const DImage& vxBackward, const DImage& vyBackward, const DImage& Im1, const DImage& Im2, double t){

@@ -44,8 +44,8 @@ def interpolation(im1, im2, ts):
   return interpolated
 
 if __name__ == '__main__':
-  im1 = cv2.imread('examples/w1SyWlV9444_00139_s000-02081.jpg')
-  im2 = cv2.imread('examples/w1SyWlV9444_00139_s000-00411.jpg')
+  im1 = cv2.imread('examples/car1.jpg')
+  im2 = cv2.imread('examples/car2.jpg')
   im1 = im1.astype(float) / 255.
   im2 = im2.astype(float) / 255.
 # Interpolate rate
