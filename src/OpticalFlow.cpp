@@ -22,12 +22,10 @@ GaussianMixture OpticalFlow::GMPara;
 Vector<double> OpticalFlow::LapPara;
 
 
-OpticalFlow::OpticalFlow(void)
-{
+OpticalFlow::OpticalFlow(void){
 }
 
-OpticalFlow::~OpticalFlow(void)
-{
+OpticalFlow::~OpticalFlow(void){
 }
 
 //--------------------------------------------------------------------------------------------------------
@@ -146,9 +144,8 @@ void OpticalFlow::genInImageMask(DImage &mask, const DImage &vx, const DImage &v
     mask.reset();
     pMask=mask.data();
     double x,y;
-    for(int i=0;i<imHeight;i++)
-        for(int j=0;j<imWidth;j++)
-        {
+    for(int i=0;i<imHeight;i++) {
+        for(int j=0;j<imWidth;j++) {
             int offset=i*imWidth+j;
             y=i+pVx[offset];
             x=j+pVy[offset];
@@ -156,6 +153,7 @@ void OpticalFlow::genInImageMask(DImage &mask, const DImage &vx, const DImage &v
                 continue;
             pMask[offset]=1;
         }
+    }
 }
 
 void OpticalFlow::genInImageMask(DImage &mask, const DImage &flow,int interval)
@@ -173,9 +171,8 @@ void OpticalFlow::genInImageMask(DImage &mask, const DImage &flow,int interval)
     pFlow = flow.data();;
     pMask=mask.data();
     double x,y;
-    for(int i=0;i<imHeight;i++)
-        for(int j=0;j<imWidth;j++)
-        {
+    for(int i=0;i<imHeight;i++) {
+        for(int j=0;j<imWidth;j++) {
             int offset=i*imWidth+j;
             y=i+pFlow[offset*2+1];
             x=j+pFlow[offset*2];
@@ -183,6 +180,7 @@ void OpticalFlow::genInImageMask(DImage &mask, const DImage &flow,int interval)
                 continue;
             pMask[offset]=1;
         }
+    }
 }
 
 //--------------------------------------------------------------------------------------------------------
@@ -237,16 +235,12 @@ void OpticalFlow::SmoothFlowSOR(const DImage &Im1, const DImage &Im2, DImage &wa
         //--------------------------------------------------------------------------
         // the inner fixed point iteration
         //--------------------------------------------------------------------------
-        for(int hh=0;hh<nInnerFPIterations;hh++)
-        {
+        for(int hh=0;hh<nInnerFPIterations;hh++) {
             // compute the derivatives of the current flow field
-            if(hh==0)
-            {
+            if(hh==0) {
                 uu.copyData(u);
                 vv.copyData(v);
-            }
-            else
-            {
+            } else {
                 uu.Add(u,du);
                 vv.Add(v,dv);
             }
@@ -265,12 +259,9 @@ void OpticalFlow::SmoothFlowSOR(const DImage &Im1, const DImage &Im2, DImage &wa
             vxData=vx.data();
             vyData=vy.data();
             double power_alpha = 0.5;
-            for(int i=0;i<nPixels;i++)
-            {
+            for(int i=0;i<nPixels;i++) {
                 temp=uxData[i]*uxData[i]+uyData[i]*uyData[i]+vxData[i]*vxData[i]+vyData[i]*vyData[i];
-                //phiData[i]=power_alpha*pow(temp+varepsilon_phi,power_alpha-1);
-                phiData[i] = 0.5/sqrt(temp+varepsilon_phi);
-                //phiData[i] = 1/(power_alpha+temp);
+                phiData[i] = power_alpha/sqrt(temp+varepsilon_phi);
             }
 
             // compute the nonlinear term of psi
@@ -346,16 +337,13 @@ void OpticalFlow::SmoothFlowSOR(const DImage &Im1, const DImage &Im2, DImage &wa
             ImDtDx.Multiply(Psi_1st,imdx,imdt);
             ImDtDy.Multiply(Psi_1st,imdy,imdt);
 
-            if(nChannels>1)
-            {
+            if(nChannels>1) {
                 ImDxy.collapse(imdxy);
                 ImDx2.collapse(imdx2);
                 ImDy2.collapse(imdy2);
                 ImDtDx.collapse(imdtdx);
                 ImDtDy.collapse(imdtdy);
-            }
-            else
-            {
+            } else {
                 imdxy.copyData(ImDxy);
                 imdx2.copyData(ImDx2);
                 imdy2.copyData(ImDy2);
@@ -366,8 +354,7 @@ void OpticalFlow::SmoothFlowSOR(const DImage &Im1, const DImage &Im2, DImage &wa
             Laplacian(foo1,u,Phi_1st);
             Laplacian(foo2,v,Phi_1st);
 
-            for(int i=0;i<nPixels;i++)
-            {
+            for(int i=0;i<nPixels;i++) {
                 imdtdx.data()[i] = -imdtdx.data()[i]-alpha*foo1.data()[i];
                 imdtdy.data()[i] = -imdtdy.data()[i]-alpha*foo2.data()[i];
             }
@@ -382,36 +369,30 @@ void OpticalFlow::SmoothFlowSOR(const DImage &Im1, const DImage &Im2, DImage &wa
 
             for(int k = 0; k<nSORIterations; k++)
                 for(int i = 0; i<imHeight; i++)
-                    for(int j = 0; j<imWidth; j++)
-                    {
+                    for(int j = 0; j<imWidth; j++) {
                         int offset = i * imWidth+j;
                         double sigma1 = 0, sigma2 = 0, coeff = 0;
                         double _weight;
 
-
-                        if(j>0)
-                        {
+                        if(j>0) {
                             _weight = phiData[offset-1];
                             sigma1  += _weight*du.data()[offset-1];
                             sigma2  += _weight*dv.data()[offset-1];
                             coeff   += _weight;
                         }
-                        if(j<imWidth-1)
-                        {
+                        if(j<imWidth-1) {
                             _weight = phiData[offset];
                             sigma1 += _weight*du.data()[offset+1];
                             sigma2 += _weight*dv.data()[offset+1];
                             coeff   += _weight;
                         }
-                        if(i>0)
-                        {
+                        if(i>0) {
                             _weight = phiData[offset-imWidth];
                             sigma1 += _weight*du.data()[offset-imWidth];
                             sigma2 += _weight*dv.data()[offset-imWidth];
                             coeff   += _weight;
                         }
-                        if(i<imHeight-1)
-                        {
+                        if(i<imHeight-1) {
                             _weight = phiData[offset];
                             sigma1  += _weight*du.data()[offset+imWidth];
                             sigma2  += _weight*dv.data()[offset+imWidth];
@@ -500,8 +481,7 @@ void OpticalFlow::SmoothFlowPDE(const DImage &Im1, const DImage &Im2, DImage &wa
     //--------------------------------------------------------------------------
     // the outer fixed point iteration
     //--------------------------------------------------------------------------
-    for(int count=0;count<nOuterFPIterations;count++)
-    {
+    for(int count=0;count<nOuterFPIterations;count++) {
         // compute the gradient
         getDxs(imdx,imdy,imdt,Im1,warpIm2);
 
@@ -515,16 +495,12 @@ void OpticalFlow::SmoothFlowPDE(const DImage &Im1, const DImage &Im2, DImage &wa
         //--------------------------------------------------------------------------
         // the inner fixed point iteration
         //--------------------------------------------------------------------------
-        for(int hh=0;hh<nInnerFPIterations;hh++)
-        {
+        for(int hh=0;hh<nInnerFPIterations;hh++) {
             // compute the derivatives of the current flow field
-            if(hh==0)
-            {
+            if(hh==0) {
                 uu.copyData(u);
                 vv.copyData(v);
-            }
-            else
-            {
+            } else {
                 uu.Add(u,du);
                 vv.Add(v,dv);
             }
@@ -977,16 +953,12 @@ void OpticalFlow::Coarse2FineFlow(DImage &vx, DImage &vy, DImage &warpI2,const D
         im2feature(Image1,GPyramid1.Image(k));
         im2feature(Image2,GPyramid2.Image(k));
 
-        if(k==GPyramid1.nlevels()-1) // if at the top level
-        {
+        if(k==GPyramid1.nlevels()-1) { // if at the top level
             vx.allocate(width,height);
             vy.allocate(width,height);
             //warpI2.copyData(Image2);
             WarpImage2.copyData(Image2);
-        }
-        else
-        {
-
+        } else {
             vx.imresize(width,height);
             vx.Multiplywith(1/ratio);
             vy.imresize(width,height);
@@ -1094,6 +1066,7 @@ void OpticalFlow::im2feature(DImage &imfeature, const DImage &im)
     int width=im.width();
     int height=im.height();
     int nchannels=im.nchannels();
+    int offset=0;
     if(nchannels==1) {
         imfeature.allocate(im.width(),im.height(),3);
         DImage imdx,imdy;
@@ -1102,10 +1075,10 @@ void OpticalFlow::im2feature(DImage &imfeature, const DImage &im)
         _FlowPrecision* data=imfeature.data();
         for(int i=0;i<height;i++) {
             for(int j=0;j<width;j++) {
-                int offset=i*width+j;
                 data[offset*3]=im.data()[offset];
                 data[offset*3+1]=imdx.data()[offset];
                 data[offset*3+2]=imdy.data()[offset];
+                ++offset;
             }
         }
     }
@@ -1120,12 +1093,12 @@ void OpticalFlow::im2feature(DImage &imfeature, const DImage &im)
         _FlowPrecision* data=imfeature.data();
         for(int i=0;i<height;i++) {
             for(int j=0;j<width;j++) {
-                int offset=i*width+j;
                 data[offset*5]=grayImage.data()[offset];
                 data[offset*5+1]=imdx.data()[offset];
                 data[offset*5+2]=imdy.data()[offset];
                 data[offset*5+3]=im.data()[offset*3+1]-im.data()[offset*3];
                 data[offset*5+4]=im.data()[offset*3+1]-im.data()[offset*3+2];
+                ++offset;
             }
         }
     } else {
