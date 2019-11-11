@@ -182,7 +182,6 @@ void FlowInterpolation::colorTransfer(DImage& dest, const DImage& interp, const 
     double *pDest = dest.data();
     const int nRows = Im1.height();
     const int nCols = Im1.width();
-    const int nChannels = Im1.nchannels();
     double ux, uy, xp1, yp1, xp2, yp2;
     int xi1, yi1, xi2, yi2;
 

@@ -1337,7 +1337,6 @@ bool Image<T>::BoundaryCheck() const
         if(!(pData[i]<1E10 && pData[i]>-1E10))
         {
             cout<<"Error, bad data!"<<endl;
-            i = i;
             return false;
         }
     return true;
