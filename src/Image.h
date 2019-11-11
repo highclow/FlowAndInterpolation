@@ -139,7 +139,7 @@ public:
     template <class T1>
     void dyy(Image<T1>& image) const;
 
-    // 
+    //
     template <class T1>
     void laplacian(Image<T1>& image) const;
 
@@ -958,7 +958,7 @@ void Image<T>::dx(Image<T1>& result,bool IsAdvancedFilter) const
         }
     } else {
         double xFilter[5]={1,-8,0,8,-1};
-        for(i=0;i<5;i++)
+        for(int i=0;i<5;i++)
             xFilter[i]/=12;
         ImageProcessing::hfiltering(pData,data,imWidth,imHeight,nChannels,xFilter,2);
     }
@@ -1001,7 +1001,7 @@ void Image<T>::dy(Image<T1>& result,bool IsAdvancedFilter) const
         }
     } else {
         double yFilter[5]={1,-8,0,8,-1};
-        for(i=0;i<5;i++)
+        for(int i=0;i<5;i++)
             yFilter[i]/=12;
         ImageProcessing::vfiltering(pData,data,imWidth,imHeight,nChannels,yFilter,2);
     }
