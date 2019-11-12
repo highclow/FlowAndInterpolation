@@ -151,7 +151,7 @@ inline void ImageProcessing::BilinearInterpolate(const T1* pImage,int width,int 
 template <class T1>
 inline T1 ImageProcessing::BilinearInterpolate(const T1* pImage,int width,int height,double x,double y)
 {
-    int xx,yy,m,n,u,v,l,offset;
+    int xx,yy,m,n,u,v,offset;
     xx=x;
     yy=y;
     double dx,dy,s;
@@ -343,7 +343,7 @@ void ImageProcessing::vfiltering(const T1* pSrcImage,T2* pDstImage,int width,int
     memset(pDstImage,0,sizeof(T2)*width*height*nChannels);
     T2* pBuffer;
     double w;
-    int i,j,l,k,offset,ii;
+    int i,j,l,k,ii;
     for(i=0;i<height;i++)
         for(j=0;j<width;j++)
         {
@@ -414,7 +414,7 @@ void ImageProcessing::filtering(const T1* pSrcImage,T2* pDstImage,int width,int 
             for(k=0;k<nChannels;k++)
                 pDstImage[offset+k]=pBuffer[k];
         }
-    delete pBuffer;
+    delete[] pBuffer;
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -424,7 +424,7 @@ template <class T1,class T2>
 void ImageProcessing::filtering_transpose(const T1* pSrcImage,T2* pDstImage,int width,int height,int nChannels,const double* pfilter2D,int fsize)
 {
     double w;
-    int i,j,u,v,k,ii,jj,wsize,offset;
+    int i,j,u,v,k,ii,jj,wsize;
     wsize=fsize*2+1;
     memset(pDstImage,0,sizeof(T2)*width*height*nChannels);
     for(i=0;i<height;i++)

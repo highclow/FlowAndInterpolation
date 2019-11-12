@@ -275,7 +275,7 @@ void OpticalFlow::SmoothFlowSOR(const DImage &Im1, const DImage &Im2, DImage &wa
             duData=du.data();
             dvData=dv.data();
 
-            double _a  = 10000, _b = 0.1;
+            // double _a  = 10000, _b = 0.1;
             if(nChannels==1)
                 for(int i=0;i<nPixels;i++)
                 {
@@ -518,7 +518,7 @@ void OpticalFlow::SmoothFlowPDE(const DImage &Im1, const DImage &Im2, DImage &wa
             uyData=uy.data();
             vxData=vx.data();
             vyData=vy.data();
-            double power_alpha = 0.5;
+            // double power_alpha = 0.5;
             for(int i=0;i<nPixels;i++)
             {
                 temp=uxData[i]*uxData[i]+uyData[i]*uyData[i]+vxData[i]*vxData[i]+vyData[i]*vyData[i];
@@ -538,7 +538,7 @@ void OpticalFlow::SmoothFlowPDE(const DImage &Im1, const DImage &Im2, DImage &wa
             duData=du.data();
             dvData=dv.data();
 
-            double _a  = 10000, _b = 0.1;
+            // double _a  = 10000, _b = 0.1;
             if(nChannels==1)
                 for(int i=0;i<nPixels;i++)
                 {
@@ -788,7 +788,6 @@ void OpticalFlow::estGaussianMixture(const DImage& Im1,const DImage& Im2,Gaussia
             para.beta[k]   = sqrt(para.beta[k]/total2[k])*(1-prior)+0.3*prior; // regularize beta
         }
         para.square();
-        count = count;
     }
 }
 
@@ -976,7 +975,7 @@ void OpticalFlow::Coarse2FineFlow(DImage &vx, DImage &vy, DImage &warpI2,const D
         SmoothFlowSOR(Image1,Image2,WarpImage2,vx,vy,alpha,nOuterFPIterations+k,nInnerFPIterations,nCGIterations+k*3);
 
         //GMPara.display();
-        if(IsDisplay) 
+        if(IsDisplay)
             cout<<endl;
     }
     //warpFL(warpI2,Im1,Im2,vx,vy);
