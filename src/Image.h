@@ -28,9 +28,8 @@ enum color_type{RGB,BGR,DATA,GRAY};
 template <class T>
 class Image
 {
-public:
-    T* pData;
 protected:
+    T* pData;
     int imWidth,imHeight,nChannels;
     int nPixels,nElements;
     bool IsDerivativeImage;
@@ -45,7 +44,7 @@ public:
 
     virtual inline void computeDimension(){nPixels=imWidth*imHeight;nElements=nPixels*nChannels;};
 
-    virtual void allocate(int width,int height,int nchannels=1);
+    void allocate(int width,int height,int nchannels=1);
 
     template <class T1>
     void allocate(const Image<T1>& other);
@@ -448,7 +447,6 @@ Image<T>::Image()
 {
     pData=NULL;
     imWidth=imHeight=nChannels=nPixels=nElements=0;
-    colorType=RGB;
     IsDerivativeImage=false;
 }
 
@@ -501,6 +499,7 @@ void Image<T>::allocate(int width,int height,int nchannels)
         pData=new T[nElements];
         memset(pData,0,sizeof(T)*nElements);
     }
+    IsDerivativeImage=false;
 }
 
 template <class T>
@@ -944,10 +943,9 @@ void Image<T>::dx(Image<T1>& result,bool IsAdvancedFilter) const
     result.setDerivative();
     T1*& data=result.data();
     if(IsAdvancedFilter==false) {
+        const T* pElement = this->data();
+        T1* pResult = result.data();
         for(int i=0;i<imHeight;i++) {
-            int offset = i * imWidth;
-            const T* pElement = this->data() + offset;
-            T* pResult = result.data() + offset;
             for(int j=0;j<imWidth-1;j++) {
                 for(int k=0;k<nChannels;k++){
                     *pResult = static_cast<T1>(*(pElement+nChannels) - *pElement);
@@ -955,6 +953,8 @@ void Image<T>::dx(Image<T1>& result,bool IsAdvancedFilter) const
                     ++pElement;
                 }
             }
+            pResult += nChannels;
+            pElement += nChannels;
         }
     } else {
         double xFilter[5]={1,-8,0,8,-1};
