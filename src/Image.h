@@ -12,6 +12,7 @@
 #include <typeinfo>
 #include "Vector.h"
 #include "Stochastic.h"
+#include <cblas.h>
 
 #ifndef _MATLAB
     #include "ImageIO.h"
@@ -1142,7 +1143,7 @@ void Image<T>::gradientmag(Image<T1> &image) const
     dx(Ix,true);
     dy(Iy,true);
     double temp;
-    double* imagedata=image.data();
+    T1* imagedata=image.data();
     const double *Ixdata=Ix.data(),*Iydata=Iy.data();
     for(int i=0;i<nPixels;i++)
     {
@@ -1153,7 +1154,7 @@ void Image<T>::gradientmag(Image<T1> &image) const
             temp+=Ixdata[offset+k]*Ixdata[offset+k];
             temp+=Iydata[offset+k]*Iydata[offset+k];
         }
-        imagedata[i]=sqrt(temp);
+        imagedata[i]=static_cast<T1>(sqrt(temp));
     }
 }
 
