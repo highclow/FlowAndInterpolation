@@ -941,22 +941,26 @@ void Image<T>::dx(Image<T1>& result,bool IsAdvancedFilter) const
         result.allocate(imWidth,imHeight,nChannels);
     result.reset();
     result.setDerivative();
-    T1*& data=result.data();
+
     if(IsAdvancedFilter==false) {
-        const T* pElement = this->data();
+        const T* pElement1 = this->data();
+        const T* pElement2 = this->data() + nChannels;
         T1* pResult = result.data();
         for(int i=0;i<imHeight;i++) {
             for(int j=0;j<imWidth-1;j++) {
                 for(int k=0;k<nChannels;k++){
-                    *pResult = static_cast<T1>(*(pElement+nChannels) - *pElement);
+                    *pResult = static_cast<T1>(*pElement2 - *pElement1);
                     ++pResult;
-                    ++pElement;
+                    ++pElement1;
+                    ++pElement2;
                 }
             }
             pResult += nChannels;
-            pElement += nChannels;
+            pElement1 += nChannels;
+            pElement2 += nChannels;
         }
     } else {
+        T1*& data=result.data();
         double xFilter[5]={1,-8,0,8,-1};
         for(int i=0;i<5;i++)
             xFilter[i]/=12;
@@ -983,12 +987,11 @@ void Image<T>::dy(Image<T1>& result,bool IsAdvancedFilter) const
     if(matchDimension(result)==false)
         result.allocate(imWidth,imHeight,nChannels);
     result.setDerivative();
-    T1*& data=result.data();
     if(IsAdvancedFilter==false) {
         int offset = nChannels*imWidth;
         const T* pElement1 = this->data();
         const T* pElement2 = this->data() + offset;
-        T* pResult = result.data();
+        T1* pResult = result.data();
         for(int i=0; i<imHeight-1; ++i) {
             for(int j=0; j<imWidth; ++j) {
                 for(int k=0; k<nChannels; ++k) {
@@ -1000,6 +1003,7 @@ void Image<T>::dy(Image<T1>& result,bool IsAdvancedFilter) const
             }
         }
     } else {
+        T1*& data=result.data();
         double yFilter[5]={1,-8,0,8,-1};
         for(int i=0;i<5;i++)
             yFilter[i]/=12;
