@@ -258,10 +258,12 @@ void OpticalFlow::SmoothFlowSOR(const DImage &Im1, const DImage &Im2, DImage &wa
             uyData=uy.data();
             vxData=vx.data();
             vyData=vy.data();
-            double power_alpha = 0.5;
+            //double power_alpha = 0.5;
             for(int i=0;i<nPixels;i++) {
                 temp=uxData[i]*uxData[i]+uyData[i]*uyData[i]+vxData[i]*vxData[i]+vyData[i]*vyData[i];
-                phiData[i] = power_alpha/sqrt(temp+varepsilon_phi);
+                //phiData[i]=power_alpha*pow(temp+varepsilon_phi,power_alpha-1);
+                phiData[i] = 0.5/sqrt(temp+varepsilon_phi);
+                //phiData[i] = 1/(power_alpha+temp);
             }
 
             // compute the nonlinear term of psi

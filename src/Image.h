@@ -95,8 +95,8 @@ public:
     }
 
     bool IsFloat () const;
-    bool IsEmpty() const { return nElements==0; };
-    bool IsInImage(int x,int y) const { return x>=0 && x<imWidth && y>=0 && y<imHeight; };
+    bool IsEmpty() const { return (nElements==0); };
+    bool IsInImage(int x,int y) const { return (x>=0 && x<imWidth && y>=0 && y<imHeight); };
 
     template <class T1>
     bool matchDimension  (const Image<T1>& image) const;
