@@ -184,9 +184,9 @@ TEST(Derivative, DerivativeDyAdvanceFilter) {
   FImage ady;
   a.dy(ady, true); 
 
-  float xFilter[5]={1,-8,0,8,-1};
+  float yFilter[5]={1,-8,0,8,-1};
   for(int i=0;i<5;i++)
-      xFilter[i]/=12;
+      yFilter[i]/=12;
   FImage ady_tmp(w, h, c);
 
   float* pBuffer;
@@ -194,12 +194,12 @@ TEST(Derivative, DerivativeDyAdvanceFilter) {
   for (int i=0; i<h; i++) {
     for (int j=0; j<w; j++) {
       int offset = i * w * c;
-      pBuffer = ady_tmp.data() + offset + j*c;
+      pBuffer = ady_tmp.data() + (i*w+j)*c;
       for (int l=-2; l<=2; l++) {
-        v = xFilter[l+2];
-        int jj = __min(__max(j+l,0),w-1);
+        v = yFilter[l+2];
+        int ii = __min(__max(i+l,0),h-1);
         for (int k=0; k<c; k++)
-          pBuffer[k]+=a[offset+jj*c+k]*v;
+          pBuffer[k]+=a[(ii*w+j)*c+k]*v;
       }
     }
   }
